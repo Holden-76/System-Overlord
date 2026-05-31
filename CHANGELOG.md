@@ -1,4 +1,4 @@
-﻿### v3.3.0 - The Premium Aesthetic Update
+### v3.3.0 - The Premium Aesthetic Update
 *   **Glassmorphism Engine:** All panels, overlays, and sidebars now utilize deep backdrop blur effects with edge-lighting borders, creating a frosted glass effect.
 *   **Vibrant Gradients:** Progress bars have been upgraded from flat colors to fully animated, shifting gradients for a much more dynamic feel.
 *   **Micro-Animations:** Buttons and stat cards now react fluidly to interaction, slightly scaling up and illuminating on hover.
@@ -26,12 +26,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [v3.0.0] - "Endless Horizon" â€” 2026-05-31
+## [v3.3.1] - Hotfix: Market & Ascension - 2026-05-31
+# System Overlord v3.3.1 Release Notes
+
+## Bug Fixes & Economy Rebalancing
+*   **Market Sales Uncapped:** The algorithm restricting the market `sellRate` strictly to your automated generation rate (`extRate + botRate + gpuRate`) has been removed. The market now drains your `state.data` backlog and manually generated data up to the absolute market bandwidth `cap`.
+*   **Ascension Epoch Progression Fixed:** A critical operator precedence error (`||0+1`) in the prestige system has been fixed. Players who ascend via the `confirmAscend` process will no longer be permanently reset to Epoch 1. Subsequent ascensions will now correctly accumulate Epochs and Epoch Tokens.
+
+## [v3.0.0] - "Endless Horizon" — 2026-05-31
 ### Added
-- **Pillar 1 â€” Full-Screen Command Center UI:** Completely replaced the 3-column grid layout with a premium full-viewport design featuring a persistent top bar, left sidebar, center stage with four tabs (NETWORK, HARDWARE, WARFARE, TERMINAL), right sidebar, and bottom status bar. Hex-grid mesh background, System Vitals widget, animated topbar stats.
-- **Pillar 2 â€” Hardware Sub-Layer:** Full server rack management system. Install CPUs (Ryzen 9 5950X â†’ Quantum Processing Unit), GPUs (RTX 4090 â†’ Neural Renderer X), RAM (DDR5 â†’ Quantum Memory Matrix), and Cooling units. Each raises the MaxOps ceiling, generates passive Data/s, and multiplies generation. Thermal throttling system penalizes overloaded racks.
-- **Pillar 3 â€” Procedural Network Warfare:** Procedurally generated corporate and AI networks discovered every 60 seconds. Breach via the existing minigame, dominate for passive income, and defend against counter-attacks using Ops. Five network modifiers (HARDENED, LUCRATIVE, HONEYPOT, Q-ENCRYPTED, GHOST). Four scaling tiers tied to Epoch count. Live canvas network map and real-time Warfare Feed.
-- **Pillar 4 â€” Infinite Mathematical Scaling:** New `fBig()` big number formatter supporting K â†’ Dd (10^42) before scientific notation fallback. Hardware-extended MaxOps with no hard ceiling. Two new Epoch Upgrades: Network Amplifier and HW Overclock.
+- **Pillar 1 — Full-Screen Command Center UI:** Completely replaced the 3-column grid layout with a premium full-viewport design featuring a persistent top bar, left sidebar, center stage with four tabs (NETWORK, HARDWARE, WARFARE, TERMINAL), right sidebar, and bottom status bar. Hex-grid mesh background, System Vitals widget, animated topbar stats.
+- **Pillar 2 — Hardware Sub-Layer:** Full server rack management system. Install CPUs (Ryzen 9 5950X → Quantum Processing Unit), GPUs (RTX 4090 → Neural Renderer X), RAM (DDR5 → Quantum Memory Matrix), and Cooling units. Each raises the MaxOps ceiling, generates passive Data/s, and multiplies generation. Thermal throttling system penalizes overloaded racks.
+- **Pillar 3 — Procedural Network Warfare:** Procedurally generated corporate and AI networks discovered every 60 seconds. Breach via the existing minigame, dominate for passive income, and defend against counter-attacks using Ops. Five network modifiers (HARDENED, LUCRATIVE, HONEYPOT, Q-ENCRYPTED, GHOST). Four scaling tiers tied to Epoch count. Live canvas network map and real-time Warfare Feed.
+- **Pillar 4 — Infinite Mathematical Scaling:** New `fBig()` big number formatter supporting K → Dd (10^42) before scientific notation fallback. Hardware-extended MaxOps with no hard ceiling. Two new Epoch Upgrades: Network Amplifier and HW Overclock.
 - **Save Migration:** Auto-migrates all saves from v2.5.0 through v2.7.0. New fields initialized to defaults. No data loss.
 - **Four New Achievements:** First Blood, Network Warlord, Hardware Hacker, Silicon Overlord.
 - **Two New Projects:** Network Warfare Protocol, Hardware Bootstrap.
@@ -90,6 +97,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Restored `agent-update_info.txt` to align with protocol.
 - First complete stable SPA version.
+
 
 
 
