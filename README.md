@@ -3,6 +3,7 @@
 <div align="center">
   <img src="https://via.placeholder.com/800x400/0a0a0a/00e8ff?text=SYSTEM+OVERLORD" alt="System Overlord Banner">
   <p><em>An incremental game of digital dominion, neural ascension, and global infiltration.</em></p>
+  <p><strong>Latest Version: v2.7.0 "The Deep Web Update"</strong></p>
 </div>
 
 ## 📌 Overview
