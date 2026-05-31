@@ -1,46 +1,6 @@
+const fs = require('fs');
 
-import { Store, initStore, loadGame } from './state.js';
-import { cacheDom } from './ui.js';
-import { gameLoop } from './engine.js';
-import { initGrid, renderGrid } from './grid.js';
-import { initForge, updateForgeUI } from './forge.js';
-import { initDyson, updateDysonUI } from './dyson.js';
-import { initTerminal } from './terminal.js';
-
-// Attach hooks to window for HTML click handlers
-window.extractData = function() { Store.state.data += Store.state.clickPower; }
-window.buyExtractor = function() { Store.state.extractors++; }
-
-window.addEventListener('DOMContentLoaded', () => {
-    cacheDom();
-    initGrid();
-    initForge();
-    initDyson();
-    initTerminal();
-    loadGame();
-    window.bootSequence();
-    requestAnimationFrame(gameLoop);
-});
-
-
-
-window.switchCenter = function(tabId) {
-    document.querySelectorAll('.ct-panel').forEach(p => p.style.display = 'none');
-    document.querySelectorAll('.center-tab').forEach(t => t.classList.remove('active'));
-    
-    const panel = document.getElementById('ct-'+tabId);
-    if(panel) panel.style.display = 'flex';
-    
-    const btn = Array.from(document.querySelectorAll('.center-tab')).find(b => b.textContent.trim().toLowerCase() === tabId);
-    if(btn) btn.classList.add('active');
-    
-    if(tabId === 'darknet') renderGrid();
-    else if(tabId === 'forge') updateForgeUI();
-    else if(tabId === 'singularity') updateDysonUI();
-};
-
-
-
+const appendCode = `
 
 /* ==========================================================================
    AUDIO ENGINE & LEGACY SYSTEMS HOTFIX
@@ -81,7 +41,7 @@ window.Particles = (() => {
         if (e.target.closest('button,.overlay-panel,.toast')) return;
         for (let i=0;i<particles.length;i++) {
             const p=particles[i]; const dx=p.x-e.clientX,dy=p.y-e.clientY;
-            if (dx*dx+dy*dy<400) { particles[i]=mkP(e.clientX,e.clientY,true); if(window.Store&&window.Store.state){let a=Math.floor(window.Store.state.clickPower||1);window.Store.state.data+=a;window.Store.state.totalData+=a;window.Store.state.lifetime.totalData+=a;window.spawnFloat(e.clientX,e.clientY,`+${a}`,'var(--accent)');window.AudioEngine.click();} break; }
+            if (dx*dx+dy*dy<400) { particles[i]=mkP(e.clientX,e.clientY,true); if(window.Store&&window.Store.state){let a=Math.floor(window.Store.state.clickPower||1);window.Store.state.data+=a;window.Store.state.totalData+=a;window.Store.state.lifetime.totalData+=a;window.spawnFloat(e.clientX,e.clientY,\`+\${a}\`,'var(--accent)');window.AudioEngine.click();} break; }
         }
     });
     function draw(rgb) {
@@ -95,8 +55,8 @@ window.Particles = (() => {
             p.x+=p.vx;p.y+=p.vy;
             if(p.x<0||p.x>canvas.width)p.vx*=-1;
             if(p.y<0||p.y>canvas.height)p.vy*=-1;
-            for(let j=i+1;j<particles.length;j++){const q=particles[j],dx2=p.x-q.x,dy2=p.y-q.y,dist=Math.sqrt(dx2*dx2+dy2*dy2);if(dist<130){c.beginPath();c.strokeStyle=`rgba(${rgb},${(1-dist/130)*0.09})`;c.lineWidth=0.5;c.moveTo(p.x,p.y);c.lineTo(q.x,q.y);c.stroke();}}
-            c.beginPath();c.arc(p.x,p.y,p.size,0,Math.PI*2);c.fillStyle=`rgba(${rgb},${p.opacity})`;c.fill();
+            for(let j=i+1;j<particles.length;j++){const q=particles[j],dx2=p.x-q.x,dy2=p.y-q.y,dist=Math.sqrt(dx2*dx2+dy2*dy2);if(dist<130){c.beginPath();c.strokeStyle=\`rgba(\${rgb},\${(1-dist/130)*0.09})\`;c.lineWidth=0.5;c.moveTo(p.x,p.y);c.lineTo(q.x,q.y);c.stroke();}}
+            c.beginPath();c.arc(p.x,p.y,p.size,0,Math.PI*2);c.fillStyle=\`rgba(\${rgb},\${p.opacity})\`;c.fill();
         }
     }
     return { draw };
@@ -115,7 +75,7 @@ window.Particles = (() => {
 
 let floaters=[];
 window.spawnFloat = function(x,y,text,color='var(--accent)'){const el=document.createElement('div');el.className='floating-text';el.textContent=text;el.style.color=color;document.body.appendChild(el);floaters.push({el,x:x-10+Math.random()*20,y:y-10,vx:(Math.random()-0.5)*55,vy:-140-Math.random()*50,life:1.0,maxLife:1.0});}
-window.updateFloaters = function(dt){for(let i=floaters.length-1;i>=0;i--){const f=floaters[i];f.vy+=280*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.life-=dt;if(f.life<=0){f.el.remove();floaters.splice(i,1);}else{f.el.style.left=f.x+'px';f.el.style.top=f.y+'px';f.el.style.opacity=f.life/f.maxLife;f.el.style.transform=`scale(${1+(1-f.life/f.maxLife)*0.4})`;}}};
+window.updateFloaters = function(dt){for(let i=floaters.length-1;i>=0;i--){const f=floaters[i];f.vy+=280*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.life-=dt;if(f.life<=0){f.el.remove();floaters.splice(i,1);}else{f.el.style.left=f.x+'px';f.el.style.top=f.y+'px';f.el.style.opacity=f.life/f.maxLife;f.el.style.transform=\`scale(\${1+(1-f.life/f.maxLife)*0.4})\`;}}};
 
 import { logMsg } from './ui.js';
 window.skipBoot=function(){
@@ -137,3 +97,52 @@ window.bootSequence=function(){
     setTimeout(next,400);
     document.addEventListener('keydown',e=>{if(e.code==='Space')window.skipBoot();},{once:true});
 };
+`;
+
+function processFile(path) {
+    let content = fs.readFileSync(path, 'utf8');
+    
+    // Inject bootSequence call if it's missing
+    if (content.includes('loadGame();') && !content.includes('window.bootSequence();')) {
+        content = content.replace('loadGame();', 'loadGame();\n    window.bootSequence();');
+    }
+    
+    // Append the legacy chunk if missing
+    if (!content.includes('AUDIO ENGINE & LEGACY SYSTEMS HOTFIX')) {
+        content += appendCode;
+    }
+    
+    fs.writeFileSync(path, content, 'utf8');
+    console.log("Patched " + path);
+}
+
+processFile('c:/Users/Holde/Downloads/System-Overlord/v4-workspace/js/main.js');
+processFile('c:/Users/Holde/Downloads/System-Overlord/releases/v4.0.0/js/main.js');
+
+// Also need to make sure Store is attached to window so Particles can read it.
+function processStateFile(path) {
+    let content = fs.readFileSync(path, 'utf8');
+    if (!content.includes('window.Store = Store;')) {
+        content += '\nwindow.Store = Store;\n';
+        fs.writeFileSync(path, content, 'utf8');
+        console.log("Patched " + path);
+    }
+}
+
+processStateFile('c:/Users/Holde/Downloads/System-Overlord/v4-workspace/js/state.js');
+processStateFile('c:/Users/Holde/Downloads/System-Overlord/releases/v4.0.0/js/state.js');
+
+// Also engine.js has gameLoop, we should add Particles.draw() and updateFloaters()
+function processEngineFile(path) {
+    let content = fs.readFileSync(path, 'utf8');
+    if (!content.includes('window.Particles.draw')) {
+        // Find render() call inside UI throttle and add particle updates before it
+        content = content.replace('render();', 'if(window.updateFloaters) window.updateFloaters(0.1);\n        if(window.Particles) window.Particles.draw("0, 255, 179");\n        render();');
+        fs.writeFileSync(path, content, 'utf8');
+        console.log("Patched " + path);
+    }
+}
+
+processEngineFile('c:/Users/Holde/Downloads/System-Overlord/v4-workspace/js/engine.js');
+processEngineFile('c:/Users/Holde/Downloads/System-Overlord/releases/v4.0.0/js/engine.js');
+

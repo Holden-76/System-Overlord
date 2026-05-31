@@ -75,3 +75,5 @@ export function loadGame(){
     function deepMerge(target,source){for(const k in target){if(!(k in source)){source[k]=target[k];}else if(typeof target[k]==='object'&&target[k]!==null&&!Array.isArray(target[k])){deepMerge(target[k],source[k]);}}return source;}
     Store.state=deepMerge(JSON.parse(JSON.stringify(defaultState)),parsed);
 }
+
+window.Store = Store;

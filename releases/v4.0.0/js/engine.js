@@ -28,6 +28,8 @@ export function gameLoop(ts){
     // Throttled Render Loop
     Store.renderTimer+=Store.dt;
     if(Store.renderTimer>=0.1){
+        if(window.updateFloaters) window.updateFloaters(0.1);
+        if(window.Particles) window.Particles.draw("0, 255, 179");
         render();
         Store.renderTimer=0;
     }
