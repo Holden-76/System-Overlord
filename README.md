@@ -3,7 +3,7 @@
 <div align="center">
   <img src="https://via.placeholder.com/800x400/0a0a0a/00e8ff?text=SYSTEM+OVERLORD" alt="System Overlord Banner">
   <p><em>An incremental game of digital dominion, neural ascension, and global infiltration.</em></p>
-  <p><strong>Latest Version: v3.3.1 "Endless Horizon"</strong></p>
+  <p><strong>Latest Version: v4.0.0 "The Singularity OS"</strong></p>
 </div>
 
 ## 📌 Overview
@@ -26,7 +26,7 @@ What starts as simple data extraction rapidly evolves into a complex web of mark
   * **Epoch Ascension (Layer 2):** After multiple reboots, transcend your current reality. Ascend to a new Epoch to earn **Epoch Tokens** for exponentially uncapped scaling upgrades.
 * **Global Leaderboard:** Features a mathematically balanced "Operator Rating" score that rewards strategic depth over raw grinding.
 
-## 🚀 Getting Started
+## 🚀 Getting Started\n\n> **⚠️ IMPORTANT V4.0.0 NOTE:** System Overlord now uses a modular ES6 architecture. You MUST run a local web server (like `node server.js`) to play the game locally and bypass browser CORS restrictions.
 
 System Overlord is designed as a standalone, single-file Single Page Application (SPA). There are no complicated build steps or external dependencies required to play locally.
 

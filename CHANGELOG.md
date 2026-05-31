@@ -16,6 +16,24 @@
 
 ### v3.1.0 - UI Polish & God Mode
 *   **Settings Expansion:** Added CRT Scanline toggles, global Tooltips toggle, and Save Management (Export/Import) buttons.
+### v3.3.0 - The Premium Aesthetic Update
+*   **Glassmorphism Engine:** All panels, overlays, and sidebars now utilize deep backdrop blur effects with edge-lighting borders, creating a frosted glass effect.
+*   **Vibrant Gradients:** Progress bars have been upgraded from flat colors to fully animated, shifting gradients for a much more dynamic feel.
+*   **Micro-Animations:** Buttons and stat cards now react fluidly to interaction, slightly scaling up and illuminating on hover.
+*   **Typography:** Imported Google Fonts (Inter and Share Tech Mono) to provide pixel-perfect, crisp text rendering across all resolutions.
+*   **Particle Backgrounds:** The background particle engine now renders dynamic cyan and purple hues based on screen positioning.
+
+### v3.2.0 - The AI LAB & Complete Polish
+*   **AI LAB Update:** Added a major new gameplay mechanic! You can now spend massive amounts of Ops and Data to train Neural Automations (Auto-Extractor, Subversion Spammer, and Auto-Breach Protocol). Automations reset on reboot but allow true idle scaling.
+*   **Animated Toggles:** Reworked the Settings menu (Tooltips and CRT Scanlines) to use sleek, animated sliding pill toggles.
+*   **Overlap Bug Fixed:** Fixed a layout rendering bug where the Network map and Terminal tab would overlap elements.
+*   **Mojibake Annihilation:** Conducted a deep-clean of the source code to eliminate every single mangled emoji that appeared as gibberish across achievements, the market, network targets, and terminal logs.
+
+### v3.1.1 - Clean Text Hotfix
+*   **Gibberish Removed:** Hunted down and eliminated a huge set of mangled characters/emojis from achievements, logs, and network displays. Replaced them with clean unicode symbols.
+
+### v3.1.0 - UI Polish & God Mode
+*   **Settings Expansion:** Added CRT Scanline toggles, global Tooltips toggle, and Save Management (Export/Import) buttons.
 *   **Admin Panel Overhaul:** Replaced basic buttons with a robust "God Mode" direct injection system, allowing specific custom inputs. Added system overrides for Threat Levels, Ops, and Thermal Heat.
 *   **Tooltips Expansion:** Added a global dynamic tooltip engine with deep coverage across Resources, Vitals, the Top Bar, Extract buttons, and Tabs.
 *   **Version Link:** The game version text is now a clickable link directly back to the GitHub source.
@@ -25,6 +43,15 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
+## [v3.3.2] - Performance Optimization Engine - 2026-05-31
+# System Overlord v3.3.2 Release Notes
+
+## Refactoring & Optimizations
+*   **Decoupled Rendering Engine:** The game loop has been strictly separated into a high-speed physics simulation and a throttled 10Hz (100ms) DOM rendering loop. This significantly reduces CPU overhead and stuttering.
+*   **Dirty Checking Mechanism:** Implemented a new caching layer (`DOM_STATE` cache) that only updates the DOM (textContent, style width, or class toggles) if the value has actually changed, preventing expensive browser repaints.
+*   **Code Reorganization:** The entire JavaScript codebase (~1400 lines) was heavily refactored and organized into strict logic blocks to improve maintainability and performance without altering any UI design or CSS.
+*   **Data Integrity Maintenance:** Ensured seamless save game migration by preserving the localStorage object structures while bumping the format to `v3_3_2`.
 
 ## [v3.3.1] - Hotfix: Market & Ascension - 2026-05-31
 # System Overlord v3.3.1 Release Notes
