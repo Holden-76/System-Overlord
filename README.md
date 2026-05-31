@@ -3,7 +3,7 @@
 <div align="center">
   <img src="https://via.placeholder.com/800x400/0a0a0a/00e8ff?text=SYSTEM+OVERLORD" alt="System Overlord Banner">
   <p><em>An incremental game of digital dominion, neural ascension, and global infiltration.</em></p>
-  <p><strong>Latest Version: v2.7.0 "The Deep Web Update"</strong></p>
+  <p><strong>Latest Version: v3.0.0 "Endless Horizon"</strong></p>
 </div>
 
 ## 📌 Overview
@@ -15,9 +15,12 @@ What starts as simple data extraction rapidly evolves into a complex web of mark
 ## ✨ Key Features
 
 * **Data Extraction & Dynamic Markets:** Extract raw data packets and sell them on a global market. Manage fluctuating supply and demand to maximize your credit income.
-* **Network Threat Level System:** Push the boundaries of your infiltration. Manually set your Threat Level (from *Secure* to *Black Site*). Higher threat levels grant massive multipliers (up to x15) but continuously drain your computational Ops and Bandwidth—run out of resources, and you will lose your botnet nodes.
+* **Network Threat Level System:** Push the boundaries of your infiltration. Manually set your Threat Level (from *Secure* to *Black Site*). Higher threat levels grant massive multipliers (up to x15) but continuously drain your computational Ops and Bandwidth.
 * **Botnet Infrastructure:** Spend your credits and data to infect remote nodes. A larger botnet generates passive data and bandwidth, fueling your expansion.
-* **Neural Compute & Creativity:** Break your own programming limiters. Build processors and memory to generate Operations (Ops). Max out your Ops to synthesize abstract "Creativity" and unlock the ultimate singularity.
+* **Neural Compute & Creativity:** Build processors and memory to generate Operations (Ops). Max out your Ops to synthesize abstract "Creativity" and unlock the ultimate singularity.
+* **Hardware Sub-Layer (v3.0):** Manage a real server rack. Install CPUs, GPUs, RAM, and Cooling units that physically raise your performance ceiling and generate passive income.
+* **Procedural Network Warfare (v3.0):** Discover and breach procedurally generated corporate networks. Dominate them for passive income streams, then defend against counter-attacks.
+* **Infinite Scaling (v3.0):** Big number formatting up to 10^42. Hardware-extended MaxOps with no ceiling. Epoch-scaling network loot.
 * **Deep Prestige Mechanics:**
   * **Reboot Protocol (Layer 1):** Reset your progress to earn **Kernel Fragments**. Spend fragments on permanent, powerful upgrades.
   * **Epoch Ascension (Layer 2):** After multiple reboots, transcend your current reality. Ascend to a new Epoch to earn **Epoch Tokens** for exponentially uncapped scaling upgrades.

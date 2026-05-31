@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.0.0] - "Endless Horizon" — 2026-05-31
+### Added
+- **Pillar 1 — Full-Screen Command Center UI:** Completely replaced the 3-column grid layout with a premium full-viewport design featuring a persistent top bar, left sidebar, center stage with four tabs (NETWORK, HARDWARE, WARFARE, TERMINAL), right sidebar, and bottom status bar. Hex-grid mesh background, System Vitals widget, animated topbar stats.
+- **Pillar 2 — Hardware Sub-Layer:** Full server rack management system. Install CPUs (Ryzen 9 5950X → Quantum Processing Unit), GPUs (RTX 4090 → Neural Renderer X), RAM (DDR5 → Quantum Memory Matrix), and Cooling units. Each raises the MaxOps ceiling, generates passive Data/s, and multiplies generation. Thermal throttling system penalizes overloaded racks.
+- **Pillar 3 — Procedural Network Warfare:** Procedurally generated corporate and AI networks discovered every 60 seconds. Breach via the existing minigame, dominate for passive income, and defend against counter-attacks using Ops. Five network modifiers (HARDENED, LUCRATIVE, HONEYPOT, Q-ENCRYPTED, GHOST). Four scaling tiers tied to Epoch count. Live canvas network map and real-time Warfare Feed.
+- **Pillar 4 — Infinite Mathematical Scaling:** New `fBig()` big number formatter supporting K → Dd (10^42) before scientific notation fallback. Hardware-extended MaxOps with no hard ceiling. Two new Epoch Upgrades: Network Amplifier and HW Overclock.
+- **Save Migration:** Auto-migrates all saves from v2.5.0 through v2.7.0. New fields initialized to defaults. No data loss.
+- **Four New Achievements:** First Blood, Network Warlord, Hardware Hacker, Silicon Overlord.
+- **Two New Projects:** Network Warfare Protocol, Hardware Bootstrap.
+
 ## [v2.7.0] - The Deep Web Update
 ### Added
 - **Offline Progress (Sleep Mode):** The system now tracks the `lastSaveTime` and calculates passive income (Data, Credits, Ops) for up to 4 hours of offline time. A "SYSTEM AWAKENED" report overlays the screen upon returning.
