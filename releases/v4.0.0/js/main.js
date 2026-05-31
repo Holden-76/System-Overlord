@@ -13,11 +13,11 @@ window.buyExtractor = function() { Store.state.extractors++; }
 
 window.addEventListener('DOMContentLoaded', () => {
     cacheDom();
+    loadGame();
     initGrid();
     initForge();
     initDyson();
     initTerminal();
-    loadGame();
     window.bootSequence();
     requestAnimationFrame(gameLoop);
 });

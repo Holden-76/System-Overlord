@@ -12,7 +12,7 @@ const puppeteer = require('puppeteer');
         console.log(`[PAGE ERROR] ${err.toString()}`);
     });
     
-    await page.goto('http://localhost:8080/');
+    await page.goto('http://127.0.0.1:8081/');
     await new Promise(r => setTimeout(r, 2000)); // wait for boot
     await browser.close();
 })();
