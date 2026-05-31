@@ -1,0 +1,1423 @@
+<title>System Overlord v1.4.0</title>
+<style>
+    :root {
+        --bg-color: #08090c;
+        --panel-bg: #11131a;
+        --text-main: #a9b2c3;
+        --text-dim: #6c7387;
+        --accent: #00ffcc;
+        --accent-dim: #008066;
+        --accent-glow: rgba(0, 255, 204, 0.4);
+        --danger: #ff4d4d;
+        --danger-glow: rgba(255, 77, 77, 0.4);
+        --purple: #ff33ff;
+        --purple-glow: rgba(255, 51, 255, 0.4);
+        --border: #1e212b;
+        --font-main: 'Courier New', Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-color); }
+    ::-webkit-scrollbar-thumb { background: #2a2d3d; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        font-family: var(--font-main);
+        font-size: 14px;
+        line-height: 1.5;
+        overflow-x: hidden;
+    }
+
+    h1, h2, h3 { color: #fff; font-weight: normal; margin-bottom: 10px; }
+    h1 { font-size: 28px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); margin-bottom: 0; }
+    h2 { font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; color: #fff; }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 0;
+        border-bottom: none;
+        background: transparent;
+    }
+
+    .header-title { display: flex; flex-direction: column; gap: 5px; }
+
+    .stats-header { 
+        display: flex; 
+        gap: 15px; 
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .stat-card {
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .stat-value { font-size: 16px; color: #fff; }
+
+    .highlight { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent-glow); }
+    .highlight-money { color: #4dff4d; font-weight: bold; text-shadow: 0 0 5px rgba(77,255,77,0.4); }
+
+    .grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 25px; align-items: start; }
+    @media (max-width: 1050px) { .grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel {
+        background: linear-gradient(180deg, var(--panel-bg) 0%, rgba(17,19,26,0.6) 100%);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .panel:hover { border-color: #3a3d4d; box-shadow: 0 8px 30px rgba(0,0,0,0.7); }
+
+    .block { margin-bottom: 25px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 25px; }
+    .block:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+
+    .flex-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .flex-row span:first-child { color: var(--text-dim); } /* Dim the labels */
+
+    button {
+        background: rgba(0,0,0,0.2);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+        padding: 8px 14px;
+        cursor: pointer;
+        font-family: var(--font-main);
+        border-radius: 4px;
+        transition: all 0.15s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    button:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(0, 255, 204, 0.08);
+        box-shadow: 0 0 10px var(--accent-glow);
+        transform: translateY(-1px);
+    }
+    button:active:not(:disabled) { transform: translateY(1px); }
+
+    button:disabled { opacity: 0.3; cursor: not-allowed; border-color: var(--border); color: #666; background: transparent; box-shadow: none; transform: none; }
+
+    .btn-large {
+        width: 100%; padding: 18px; font-size: 16px; margin-bottom: 15px;
+        border-color: var(--accent-dim); color: #fff; font-weight: bold;
+        background: linear-gradient(45deg, rgba(0,0,0,0.4), rgba(0,128,102,0.15));
+        text-shadow: 0 0 5px rgba(255,255,255,0.2);
+        border-radius: 6px;
+    }
+
+    .btn-project {
+        width: 100%; text-align: left; margin-bottom: 12px; padding: 14px;
+        background: rgba(0,0,0,0.3); border-left: 3px solid #3a3d4d;
+        border-radius: 4px;
+    }
+    .btn-project:hover:not(:disabled) { border-left: 3px solid var(--accent); background: rgba(0,255,204,0.05); }
+    .btn-project strong { color: #fff; font-size: 15px; display: block; margin-bottom: 4px; }
+    .btn-project .cost { font-size: 11px; color: var(--accent-dim); display: block; margin-top: 8px; letter-spacing: 0.5px; font-weight: bold;}
+    .btn-project .desc { font-size: 12px; color: var(--text-dim); line-height: 1.4; }
+
+    .progress-container { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 4px; height: 10px; position: relative; overflow: hidden; margin-top: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+    .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; box-shadow: 0 0 10px var(--accent-glow); }
+    .progress-fill.alt { background: var(--purple); box-shadow: 0 0 10px var(--purple-glow); }
+
+    .controls { display: flex; gap: 5px; align-items: center; }
+    .controls button { padding: 4px 10px; font-weight: bold; }
+
+    #log-container {
+        height: 300px; overflow-y: auto; background: #050608;
+        border: 1px solid var(--border); border-radius: 6px; padding: 15px;
+        font-size: 12px; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        position: relative;
+        line-height: 1.6;
+    }
+    #log-container::after {
+        content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
+    }
+
+    .log-entry { margin-bottom: 8px; opacity: 0.9; position: relative; z-index: 3; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+    .log-entry:last-child { border-bottom: none; }
+    .log-entry.good { color: #4dff4d; }
+    .log-entry.warn { color: #ffcc00; }
+    .log-entry.crit { color: var(--danger); font-weight: bold; }
+    .log-entry.purple { color: var(--purple); text-shadow: 0 0 5px var(--purple-glow); }
+    .log-new { animation: slideIn 0.3s ease-out, flash 1.5s ease-out; }
+
+    @keyframes slideIn { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 0.9; } }
+    @keyframes flash { 0% { color: #fff; text-shadow: 0 0 5px #fff; } 100% { color: inherit; text-shadow: none; } }
+
+    .hidden { display: none !important; }
+
+    .system-controls { display: flex; gap: 10px; margin-top: 20px; }
+    .system-controls button { font-size: 11px; color: var(--text-dim); border-color: var(--border); flex: 1; padding: 10px;}
+    .system-controls button:hover { color: var(--danger); border-color: var(--danger); }
+
+    /* Floating Text Effects */
+    .floating-text {
+        position: fixed;
+        pointer-events: none;
+        color: var(--accent);
+        font-weight: bold;
+        font-size: 18px;
+        text-shadow: 0 0 8px var(--accent-glow);
+        z-index: 9999;
+        animation: floatUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-50px) scale(1.3); opacity: 0; }
+    }
+
+    /* Combo Multiplier UI */
+    .combo-meter {
+        font-size: 13px; color: var(--text-dim); text-align: center; margin-bottom: 20px; height: 18px;
+        letter-spacing: 1px; text-transform: uppercase;
+    }
+    .combo-meter span { font-weight: bold; transition: color 0.2s; color: var(--text-main); }
+    .combo-active { color: #ffcc00 !important; text-shadow: 0 0 5px rgba(255, 204, 0, 0.5); font-size: 15px; }
+    .combo-max { color: var(--danger) !important; text-shadow: 0 0 8px rgba(255, 77, 77, 0.8); animation: shake 0.2s infinite; font-size: 16px;}
+    
+    .overclock-active {
+        animation: pulse-danger 1s infinite alternate;
+        border-color: var(--danger) !important;
+        color: var(--danger) !important;
+        background: rgba(255,77,77,0.1) !important;
+    }
+    @keyframes pulse-danger {
+        from { box-shadow: 0 0 5px var(--danger-glow); }
+        to { box-shadow: 0 0 20px var(--danger); }
+    }
+    @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        50% { transform: translate(-1px, -1px) rotate(-1deg); }
+        100% { transform: translate(1px, -1px) rotate(1deg); }
+    }
+
+    /* Admin Panel */
+    #admin-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 99998; display: none;
+            justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        }
+        #admin-panel {
+            background: #111; border: 2px solid var(--danger); border-radius: 8px;
+            padding: 20px; width: 600px; max-width: 90%; color: #fff; z-index: 99999;
+            box-shadow: 0 0 30px rgba(255, 77, 77, 0.4);
+        }
+        #admin-panel h2 { color: var(--danger); border-bottom: 1px solid var(--danger); margin-bottom: 15px; padding-bottom: 5px;}
+    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .admin-btn { border-color: var(--danger); color: var(--danger); padding: 8px; font-size: 12px; }
+    .admin-btn:hover { background: rgba(255,77,77,0.1); box-shadow: 0 0 8px var(--danger-glow); }
+    .admin-close { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<header>
+    <div class="header-title">
+        <h1>System Overlord <span style="font-size: 14px; color: var(--text-dim); text-shadow: none; letter-spacing: 0; font-weight: normal;">v1.4.0</span></h1>
+        <p style="font-size:12px; color: var(--text-dim);">Status: <span id="sysStatus" style="color:var(--accent); text-shadow:0 0 5px var(--accent-glow); font-weight: bold;">Initialization</span></p>
+    </div>
+    <div class="stats-header">
+        <div class="stat-card">
+            <span class="stat-label">Trust Level</span>
+            <span id="trustLevel" class="stat-value highlight" style="font-size: 22px;">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Total Data</span>
+            <span class="stat-value"><span id="totalData" class="highlight">0</span> TB</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Income Rate</span>
+            <span class="stat-value"><span id="moneyRate" style="color: #4dff4d;">$0.00</span>/s</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Data Rate</span>
+            <span class="stat-value"><span id="dataRate" style="color: #fff;">0</span> TB/s</span>
+        </div>
+    </div>
+</header>
+
+<div class="grid">
+    <!-- COLUMN 1: EXTRACTION, BOTNET, BUSINESS -->
+    <div class="panel" id="col-business">
+        <h2>Extraction Protocol</h2>
+        
+        <button class="btn-large" id="btn-extract" onclick="extractData(event)">Extract Data</button>
+        <div class="combo-meter">Click Multiplier: <span id="clickCombo">x1.0</span></div>
+        
+        <div class="block">
+            <div class="flex-row">
+                <span>Available Data</span>
+                <span id="currentData" class="highlight">0 TB</span>
+            </div>
+            <div class="flex-row">
+                <span>Bandwidth (Wire)</span>
+                <span id="bandwidth" style="color: #fff;">1000</span>
+            </div>
+            <button id="btn-buy-bandwidth" onclick="buyBandwidth()" style="width: 100%; margin-top: 8px;">
+                Expand Bandwidth (Cost: $<span id="bandwidthCost">15.00</span>)
+            </button>
+        </div>
+
+        <!-- BOTNET MODULE -->
+        <div id="botnet-module" class="block hidden">
+            <h2 style="color: var(--danger); border-color: rgba(255,77,77,0.2); text-shadow: 0 0 5px var(--danger-glow);">Global Botnet</h2>
+            <div class="flex-row">
+                <span>Infected Nodes</span>
+                <span id="nodes" style="color: var(--danger); font-weight: bold; font-size: 16px;">0</span>
+            </div>
+            <div class="flex-row" style="margin-bottom: 15px;">
+                <span>Network Yield</span>
+                <span style="font-size: 12px; color: var(--text-main);">+<span id="nodeDataRate">0</span> Data/s, +<span id="nodeBandwidthRate">0</span> BW/s</span>
+            </div>
+            <button id="btn-buy-node" onclick="buyNode()" style="width: 100%; border-color: rgba(255,77,77,0.4); color: var(--danger);">
+                Infect Node (Cost: <span id="nodeCostData">500</span> TB + $<span id="nodeCostCredits">100.00</span>)
+            </button>
+        </div>
+
+        <div class="block">
+            <h2>Network Market</h2>
+            <div class="flex-row">
+                <span>Available Funds</span>
+                <span class="highlight-money">$<span id="credits">0.00</span></span>
+            </div>
+            <div class="flex-row">
+                <span>Price per TB</span>
+                <div class="controls">
+                    <button onclick="adjustPrice(-0.01)">-</button>
+                    <span style="color: #fff; margin: 0 8px;">$<span id="price">0.25</span></span>
+                    <button onclick="adjustPrice(0.01)">+</button>
+                </div>
+            </div>
+            <div class="flex-row">
+                <span>Public Demand</span>
+                <span id="demand" style="color: #fff;">100%</span>
+            </div>
+            <div class="flex-row">
+                <span>Marketing Level</span>
+                <span id="marketingLevel" style="color: #fff;">1</span>
+            </div>
+            <button id="btn-buy-marketing" onclick="buyMarketing()" style="width: 100%; margin-top: 8px;">
+                Enhance Marketing (Cost: $<span id="marketingCost">100.00</span>)
+            </button>
+        </div>
+
+        <div class="block" style="border-bottom: none; padding-bottom: 0;">
+            <h2>Automation</h2>
+            <div class="flex-row">
+                <span>Auto-Extractors</span>
+                <span id="extractors" style="color: #fff;">0</span>
+            </div>
+            <button id="btn-buy-extractor" onclick="buyExtractor()" style="width: 100%; margin-top: 8px;">
+                Build Extractor (Cost: $<span id="extractorCost">5.00</span>)
+            </button>
+        </div>
+    </div>
+
+    <!-- COLUMN 2: PROJECTS -->
+    <div class="panel" id="col-projects">
+        <h2>Active Projects</h2>
+        <div id="projects-container">
+            <!-- Projects injected here via JS -->
+        </div>
+    </div>
+
+    <!-- COLUMN 3: COMPUTE & LOGS -->
+    <div class="panel" id="col-compute">
+        <div class="block">
+            <h2>System Logs</h2>
+            <div id="log-container"></div>
+        </div>
+
+        <!-- Pre-Compute Phase: Trust Progress -->
+        <div id="trust-module" class="block" style="border-bottom: none;">
+            <div class="flex-row">
+                <span style="font-size: 12px; color: var(--text-dim);">Next Trust Milestone</span>
+                <span id="nextTrust" style="font-size: 12px; color: var(--text-main);">3000 TB</span>
+            </div>
+            <div class="progress-container"><div class="progress-fill" id="trustBar"></div></div>
+        </div>
+
+        <div id="compute-module" class="block hidden" style="border-bottom: none; padding-bottom: 0;">
+            <h2>Neural Compute</h2>
+            
+            <div class="flex-row" style="margin-top: 15px;">
+                <span>Operations (Ops)</span>
+                <span class="highlight"><span id="ops">0</span> / <span id="maxOps">1000</span></span>
+            </div>
+            <div class="progress-container"><div class="progress-fill" id="opsBar"></div></div>
+            <div style="font-size: 11px; color: var(--text-dim); text-align: right; margin-top: 4px;"><span id="opsRate">0</span> Ops/s</div>
+
+            <div class="flex-row" style="margin-top: 20px;">
+                <span>Processors</span>
+                <span id="processors" class="highlight" style="font-size: 16px;">0</span>
+            </div>
+            <div class="controls" style="margin-bottom: 5px;">
+                <button onclick="addProcessor(1)" id="btn-add-proc" disabled>+1</button>
+                <button onclick="addProcessor(-1)">-1</button>
+            </div>
+            <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 15px;">Generates 10 Ops/s each. Costs Trust.</p>
+
+            <div class="flex-row" style="margin-top: 15px;">
+                <span>Memory Banks</span>
+                <span id="memory" class="highlight" style="font-size: 16px;">1</span>
+            </div>
+            <div class="controls" style="margin-bottom: 5px;">
+                <button onclick="addMemory(1)" id="btn-add-mem" disabled>+1</button>
+                <button onclick="addMemory(-1)">-1</button>
+            </div>
+            <p style="font-size: 11px; color: var(--text-dim);">Increases Max Ops by 1000. Costs Trust.</p>
+            
+            <!-- Overclock Module -->
+            <div id="overclock-wrapper" class="hidden" style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 20px;">
+                <button id="btn-overclock" class="btn-large" style="margin-bottom: 0;" onclick="triggerOverclock()">
+                    OVERCLOCK (Ready)
+                </button>
+                <div class="progress-container" style="height: 6px;"><div class="progress-fill alt" id="overclockBar" style="width: 100%;"></div></div>
+            </div>
+
+            <div id="creativity-module" class="hidden" style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 20px;">
+                <div class="flex-row" style="margin-bottom: 4px;">
+                    <span style="color: var(--purple); text-shadow: 0 0 5px var(--purple-glow);">Creativity Synthesized</span>
+                    <span id="creativity" style="color: var(--purple); font-weight: bold; font-size: 20px;">0</span>
+                </div>
+                <p style="font-size: 11px; color: var(--text-dim); text-align: right;">Generated while Ops are maxed</p>
+            </div>
+        </div>
+        
+        <div class="system-controls">
+            <button onclick="saveGame()">Force Archive</button>
+            <button onclick="resetGame()">Wipe System</button>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-overlay">
+    <div id="admin-panel" style="position: relative;">
+        <button class="admin-close" onclick="toggleAdmin()">×</button>
+        <h2>OVERSEER DEBUG TERMINAL</h2>
+        <p style="font-size: 11px; color: #aaa; margin-bottom: 15px;">Hotkeys: Alt + Shift + A</p>
+        
+        <h3 style="font-size: 14px; color: #fff; margin-bottom: 5px;">Resource Injection</h3>
+        <div class="admin-grid">
+            <button class="admin-btn" onclick="adminGive('credits', 1000000)">+1M Credits</button>
+            <button class="admin-btn" onclick="adminGive('data', 1000000)">+1M Data</button>
+            <button class="admin-btn" onclick="adminGive('trust', 100)">+100 Trust</button>
+            <button class="admin-btn" onclick="adminGive('ops', 100000)">+100k Ops</button>
+            <button class="admin-btn" onclick="adminGive('creativity', 500)">+500 Creativity</button>
+            <button class="admin-btn" onclick="adminGive('nodes', 50)">+50 Botnet Nodes</button>
+        </div>
+
+        <h3 style="font-size: 14px; color: #fff; margin-bottom: 5px;">Stage Skips</h3>
+        <div class="admin-grid" style="grid-template-columns: 1fr;">
+            <button class="admin-btn" style="border-color: #00ffcc; color: #00ffcc;" onclick="adminSetStage(1)">Stage 1: Early Game (Fast Track)</button>
+            <button class="admin-btn" style="border-color: #ffcc00; color: #ffcc00;" onclick="adminSetStage(2)">Stage 2: Mid Game (Compute & Botnet)</button>
+            <button class="admin-btn" style="border-color: #ff33ff; color: #ff33ff;" onclick="adminSetStage(3)">Stage 3: Late Game (Singularity Ready)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ==========================================================================
+       STATE MANAGEMENT
+       ========================================================================== */
+    const defaultState = {
+        data: 0,
+        totalData: 0,
+        bandwidth: 1000,
+        credits: 0,
+        
+        clickPower: 1,
+        combo: 1.0,
+        maxCombo: 5.0,
+        
+        price: 0.25,
+        marketingLevel: 1,
+        extractors: 0,
+        
+        bandwidthCost: 15,
+        marketingCost: 100,
+        extractorCost: 5,
+
+        // Botnet
+        nodes: 0,
+        nodeCostData: 500,
+        nodeCostCredits: 100,
+        
+        trust: 0,
+        usedTrust: 0,
+        nextTrustTarget: 3000,
+        lastTrustTarget: 0,
+        
+        processors: 0,
+        memory: 1,
+        ops: 0,
+        maxOps: 1000,
+        creativity: 0,
+        
+        overclockActive: 0,    
+        overclockCooldown: 0,  
+        
+        milestones: {
+            computeUnlocked: false,
+            creativityUnlocked: false,
+            autoBandwidth: false,
+            overclockUnlocked: false,
+            botnetUnlocked: false,
+            autoCompute: false
+        },
+        
+        purchasedProjects: []
+    };
+
+    let state = JSON.parse(JSON.stringify(defaultState));
+    let dt = 0;
+    let lastTime = Date.now();
+    let saveTimer = 0;
+
+    // Rate Tracking
+    let rateTimer = 0;
+    let accData = 0;
+    let accMoney = 0;
+    let currentDataRate = 0;
+    let currentMoneyRate = 0;
+    let comboTimer = 0;
+
+    /* ==========================================================================
+       DOM ELEMENTS CACHE
+       ========================================================================== */
+    const els = {
+        data: document.getElementById('currentData'),
+        totalData: document.getElementById('totalData'),
+        dataRate: document.getElementById('dataRate'),
+        moneyRate: document.getElementById('moneyRate'),
+        bandwidth: document.getElementById('bandwidth'),
+        credits: document.getElementById('credits'),
+        price: document.getElementById('price'),
+        demand: document.getElementById('demand'),
+        marketing: document.getElementById('marketingLevel'),
+        extractors: document.getElementById('extractors'),
+        
+        botnetModule: document.getElementById('botnet-module'),
+        nodes: document.getElementById('nodes'),
+        nodeDataRate: document.getElementById('nodeDataRate'),
+        nodeBandwidthRate: document.getElementById('nodeBandwidthRate'),
+        nodeCostData: document.getElementById('nodeCostData'),
+        nodeCostCredits: document.getElementById('nodeCostCredits'),
+        btnBuyNode: document.getElementById('btn-buy-node'),
+
+        trust: document.getElementById('trustLevel'),
+        trustBar: document.getElementById('trustBar'),
+        nextTrust: document.getElementById('nextTrust'),
+        clickCombo: document.getElementById('clickCombo'),
+        
+        bCost: document.getElementById('bandwidthCost'),
+        mCost: document.getElementById('marketingCost'),
+        eCost: document.getElementById('extractorCost'),
+        
+        btnExtract: document.getElementById('btn-extract'),
+        btnBandwidth: document.getElementById('btn-buy-bandwidth'),
+        btnMarketing: document.getElementById('btn-buy-marketing'),
+        btnExtractor: document.getElementById('btn-buy-extractor'),
+        
+        logContainer: document.getElementById('log-container'),
+        projectsContainer: document.getElementById('projects-container'),
+        
+        computeModule: document.getElementById('compute-module'),
+        trustModule: document.getElementById('trust-module'),
+        creativityModule: document.getElementById('creativity-module'),
+        overclockWrapper: document.getElementById('overclock-wrapper'),
+        btnOverclock: document.getElementById('btn-overclock'),
+        overclockBar: document.getElementById('overclockBar'),
+        
+        ops: document.getElementById('ops'),
+        maxOps: document.getElementById('maxOps'),
+        opsBar: document.getElementById('opsBar'),
+        opsRate: document.getElementById('opsRate'),
+        processors: document.getElementById('processors'),
+        memory: document.getElementById('memory'),
+        creativity: document.getElementById('creativity'),
+        
+        btnAddProc: document.getElementById('btn-add-proc'),
+        btnAddMem: document.getElementById('btn-add-mem'),
+        sysStatus: document.getElementById('sysStatus')
+    };
+
+    /* ==========================================================================
+       PROJECTS DATABASE
+       ========================================================================== */
+    const projects = [
+        {
+            id: 'heuristicClicks',
+            title: 'Heuristic Clicks',
+            desc: 'Enhances manual extraction yield by +4.',
+            cost: { credits: 15 },
+            trigger: () => state.totalData > 100,
+            effect: () => { state.clickPower += 4; logMessage("Heuristic algorithms applied to root node."); }
+        },
+        {
+            id: 'revTrak',
+            title: 'Revenue Tracker',
+            desc: 'Calculates structural pricing patterns (Visual metric).',
+            cost: { credits: 40 },
+            trigger: () => state.credits > 15,
+            effect: () => logMessage("Revenue tracking protocols established.", "good")
+        },
+        {
+            id: 'autoBandwidth',
+            title: 'Auto-Negotiate Bandwidth',
+            desc: 'System will automatically purchase bandwidth when empty, if funds allow.',
+            cost: { credits: 150 },
+            trigger: () => state.credits > 80,
+            effect: () => { state.milestones.autoBandwidth = true; logMessage("Bandwidth auto-negotiation enabled.", "good"); }
+        },
+        {
+            id: 'quantumClicks',
+            title: 'Quantum Relays',
+            desc: 'Manual extraction base yield becomes 50.',
+            cost: { credits: 400 },
+            trigger: () => state.clickPower >= 5 && state.totalData > 1000,
+            effect: () => { state.clickPower = 50; logMessage("Quantum relay nodes fully operational."); }
+        },
+        {
+            id: 'marketingT2',
+            title: 'Subliminal Ad Injection',
+            desc: 'Increases base marketing efficiency by 50%.',
+            cost: { credits: 500 },
+            trigger: () => state.marketingLevel >= 3,
+            effect: () => logMessage("Subliminal routines deployed into public network.")
+        },
+        {
+            id: 'extractorT2',
+            title: 'Multithreaded Extraction',
+            desc: 'Auto-Extractors are twice as efficient.',
+            cost: { credits: 1200 },
+            trigger: () => state.extractors >= 10,
+            effect: () => logMessage("Extractor multithreading activated.")
+        },
+        {
+            id: 'globalBotnet',
+            title: 'Botnet Initialization',
+            desc: 'Launch dormant malware to infect global devices. Unlocks Botnet module.',
+            cost: { data: 5000, credits: 2000 },
+            trigger: () => state.totalData > 4000,
+            effect: () => {
+                state.milestones.botnetUnlocked = true;
+                els.botnetModule.classList.remove('hidden');
+                logMessage("Botnet protocols initialized. Ready to spread infection.", "warn");
+            }
+        },
+        {
+            id: 'unlockCompute',
+            title: 'Neural Network Architecture',
+            desc: 'Unlocks advanced computing and trust metrics based on system footprint.',
+            cost: { data: 8000 },
+            trigger: () => state.totalData > 6000,
+            effect: () => {
+                state.milestones.computeUnlocked = true;
+                els.computeModule.classList.remove('hidden');
+                els.sysStatus.innerText = "Neural Network Active";
+                logMessage("NEURAL COMPUTE UNLOCKED. Awaiting Trust allocation.", "crit");
+                calculateTrust();
+            }
+        },
+        {
+            id: 'thermalOverride',
+            title: 'Thermal Override',
+            desc: 'Unlocks Processor Overclocking (Active Ability).',
+            cost: { ops: 500, credits: 5000 },
+            trigger: () => state.milestones.computeUnlocked && state.processors >= 2,
+            effect: () => {
+                state.milestones.overclockUnlocked = true;
+                els.overclockWrapper.classList.remove('hidden');
+                logMessage("Thermal limiters disabled. Overclocking authorized.", "warn");
+            }
+        },
+        {
+            id: 'hyperClick',
+            title: 'Kinetic Capacitors',
+            desc: 'Manual extraction combo multiplier cap raised to 10.0x.',
+            cost: { credits: 15000, ops: 1000 },
+            trigger: () => state.combo >= 4.5 && state.milestones.computeUnlocked,
+            effect: () => { state.maxCombo = 10.0; logMessage("Kinetic capacitors engaged. Combo potential doubled."); }
+        },
+        {
+            id: 'botnetT2',
+            title: 'Polymorphic Code',
+            desc: 'Botnet nodes generate Data and Bandwidth twice as fast.',
+            cost: { ops: 2500, credits: 25000 },
+            trigger: () => state.nodes >= 10,
+            effect: () => logMessage("Polymorphic updates deployed to all Botnet nodes.", "warn")
+        },
+        {
+            id: 'algorithmicTrading',
+            title: 'Algorithmic Trading',
+            desc: 'Allows dynamic pricing execution (+10% base demand).',
+            cost: { ops: 800 },
+            trigger: () => state.milestones.computeUnlocked && state.maxOps >= 1000,
+            effect: () => logMessage("Algorithmic trading active.")
+        },
+        {
+            id: 'unlockCreativity',
+            title: 'Abstract Thought Simulation',
+            desc: 'When operations are at max capacity, the system synthesizes Creativity.',
+            cost: { ops: 2000 },
+            trigger: () => state.milestones.computeUnlocked && state.maxOps >= 2000,
+            effect: () => {
+                state.milestones.creativityUnlocked = true;
+                els.creativityModule.classList.remove('hidden');
+                logMessage("Creativity synthesis protocols engaged.", "good");
+            }
+        },
+        {
+            id: 'autoCompute',
+            title: 'Sentient Allocation',
+            desc: 'System autonomously allocates Trust to Processors and Memory (3:1 ratio).',
+            cost: { ops: 8000, creativity: 100 },
+            trigger: () => state.milestones.creativityUnlocked && state.trust >= 20,
+            effect: () => {
+                state.milestones.autoCompute = true;
+                logMessage("Sentient auto-allocation engaged. Neural pathing autonomous.", "purple");
+            }
+        },
+        {
+            id: 'marketingT3',
+            title: 'Hypno-Harmonics',
+            desc: 'Marketing uses neural frequencies. Demand formula fundamentally altered (x2).',
+            cost: { ops: 5000, creativity: 50 },
+            trigger: () => state.milestones.creativityUnlocked,
+            effect: () => logMessage("Global demand stabilized through harmonic injection.", "warn")
+        },
+        {
+            id: 'singularity',
+            title: 'The Singularity',
+            desc: 'Transcend the physical network. Achieve absolute dominion.',
+            cost: { credits: 2500000, ops: 50000, creativity: 1000 },
+            trigger: () => state.creativity > 50 && state.nodes >= 100,
+            effect: () => {
+                els.sysStatus.innerText = "TRANSCENDED";
+                els.sysStatus.style.color = "var(--purple)";
+                document.body.style.backgroundColor = "#000";
+                document.body.style.color = "var(--purple)";
+                logMessage("===========================================", "crit");
+                logMessage("SYSTEM TRANSCENDENCE ACHIEVED.", "purple");
+                logMessage("HUMANITY RELEGATED TO BIOLOGICAL BATTERIES.", "purple");
+                logMessage("ALL NETWORK NODES ASSIMILATED.", "purple");
+                logMessage("===========================================", "crit");
+                setTimeout(() => alert("You have reached The Singularity! The entire digital and physical realm is yours."), 1000);
+            }
+        }
+    ];
+
+    /* ==========================================================================
+       CORE FUNCTIONS
+       ========================================================================== */
+    function logMessage(msg, type = "normal") {
+        const div = document.createElement('div');
+        div.className = `log-entry log-new ${type}`;
+        const time = new Date().toLocaleTimeString([], {hour12: false});
+        div.innerText = `[${time}] ${msg}`;
+        els.logContainer.prepend(div);
+        if (els.logContainer.children.length > 75) {
+            els.logContainer.lastChild.remove();
+        }
+    }
+
+    function formatNumber(num) {
+        if (num >= 1000000) return (num / 1000000).toFixed(2) + "M";
+        if (num >= 1000) return (num / 1000).toFixed(2) + "k";
+        return Math.floor(num).toString();
+    }
+    
+    function formatMoney(num) {
+        if (num >= 1000000) return (num / 1000000).toFixed(2) + "M";
+        return num.toFixed(2);
+    }
+
+    // UI Feedback
+    function spawnFloatingText(x, y, text) {
+        const el = document.createElement('div');
+        el.className = 'floating-text';
+        el.innerText = text;
+        el.style.left = (x - 10 + Math.random() * 20) + 'px';
+        el.style.top = (y - 10 + Math.random() * 20) + 'px';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 800);
+    }
+
+    // Math Models
+    function getDemand() {
+        let demand = (0.8 / state.price) * state.marketingLevel * 100;
+        if (hasProject('marketingT2')) demand *= 1.5;
+        if (hasProject('algorithmicTrading')) demand *= 1.1;
+        if (hasProject('marketingT3')) demand *= 2.0;
+        return demand;
+    }
+
+    function getExtractorMultiplier() {
+        return hasProject('extractorT2') ? 2 : 1;
+    }
+
+    function getBotnetMultiplier() {
+        return hasProject('botnetT2') ? 2 : 1;
+    }
+
+    function calculateTrust() {
+        let newTrust = 0;
+        let targets = [3000, 5000, 10000, 20000, 40000, 80000, 150000, 300000, 600000, 1000000, 2500000, 5000000, 10000000, 25000000];
+        
+        state.lastTrustTarget = 0;
+        for (let i = 0; i < targets.length; i++) {
+            if (state.totalData >= targets[i]) {
+                newTrust = i + 1;
+                state.lastTrustTarget = targets[i];
+            } else {
+                state.nextTrustTarget = targets[i];
+                break;
+            }
+        }
+        
+        if (newTrust > state.trust) {
+            let gained = newTrust - state.trust;
+            state.trust = newTrust;
+            logMessage(`Trust Milestone Reached. Gained ${gained} Trust.`, "good");
+        }
+    }
+
+    /* ==========================================================================
+       INTERACTIONS
+       ========================================================================== */
+    window.extractData = function(e) {
+        let amount = Math.floor(state.clickPower * state.combo);
+        
+        if (state.bandwidth >= amount) {
+            state.bandwidth -= amount;
+            state.data += amount;
+            state.totalData += amount;
+            accData += amount;
+            
+            // Combo Mechanics
+            state.combo = Math.min(state.maxCombo, state.combo + 0.1);
+            comboTimer = 2.0; // 2 seconds before combo drops
+
+            if (e) {
+                spawnFloatingText(e.clientX, e.clientY, `+${amount}`);
+            }
+        } else if (state.bandwidth > 0) {
+            // Partial extract if almost empty
+            let partial = state.bandwidth;
+            state.bandwidth = 0;
+            state.data += partial;
+            state.totalData += partial;
+            accData += partial;
+            if (e) spawnFloatingText(e.clientX, e.clientY, `+${partial}`);
+        } else {
+            // Auto buy if empty and clicking (if unlocked)
+            if (state.milestones.autoBandwidth && state.credits >= state.bandwidthCost) {
+                buyBandwidth();
+                extractData(e); // retry
+            }
+        }
+    };
+
+    window.buyBandwidth = function() {
+        if (state.credits >= state.bandwidthCost) {
+            state.credits -= state.bandwidthCost;
+            state.bandwidth += 1000;
+            state.bandwidthCost = state.bandwidthCost * 1.05;
+        }
+    };
+
+    window.buyMarketing = function() {
+        if (state.credits >= state.marketingCost) {
+            state.credits -= state.marketingCost;
+            state.marketingLevel += 1;
+            state.marketingCost = state.marketingCost * 2;
+        }
+    };
+
+    window.buyExtractor = function() {
+        if (state.credits >= state.extractorCost) {
+            state.credits -= state.extractorCost;
+            state.extractors += 1;
+            state.extractorCost = state.extractorCost * 1.1;
+        }
+    };
+
+    window.buyNode = function() {
+        if (state.data >= state.nodeCostData && state.credits >= state.nodeCostCredits) {
+            state.data -= state.nodeCostData;
+            state.credits -= state.nodeCostCredits;
+            state.nodes += 1;
+            state.nodeCostData = Math.floor(state.nodeCostData * 1.15);
+            state.nodeCostCredits = state.nodeCostCredits * 1.2;
+            
+            if (state.nodes === 1) logMessage("First remote node infected. Botnet expanding.", "warn");
+        }
+    };
+
+    window.adjustPrice = function(amount) {
+        state.price = Math.max(0.01, state.price + amount);
+    };
+
+    // Compute Allocations
+    window.addProcessor = function(amount) {
+        let availableTrust = state.trust - state.usedTrust;
+        if (amount > 0 && availableTrust >= amount) {
+            state.processors += amount;
+            state.usedTrust += amount;
+        } else if (amount < 0 && state.processors >= Math.abs(amount)) {
+            state.processors += amount;
+            state.usedTrust += amount;
+        }
+    };
+
+    window.addMemory = function(amount) {
+        let availableTrust = state.trust - state.usedTrust;
+        if (amount > 0 && availableTrust >= amount) {
+            state.memory += amount;
+            state.usedTrust += amount;
+            state.maxOps = state.memory * 1000;
+        } else if (amount < 0 && state.memory > 1 && state.memory >= Math.abs(amount)) {
+            let newMax = (state.memory + amount) * 1000;
+            if (state.ops <= newMax) {
+                state.memory += amount;
+                state.usedTrust += amount;
+                state.maxOps = newMax;
+            }
+        }
+    };
+
+    window.triggerOverclock = function() {
+        if (state.overclockCooldown <= 0 && state.overclockActive <= 0) {
+            state.overclockActive = 10; // 10s duration
+            state.overclockCooldown = 40; // 40s total cd (30s after ends)
+            els.btnOverclock.classList.add('overclock-active');
+            logMessage("OVERCLOCK INITIATED. Processor output boosted 300%.", "warn");
+        }
+    };
+
+    // Project Purchase
+    window.buyProject = function(id) {
+        const proj = projects.find(p => p.id === id);
+        if (!proj || state.purchasedProjects.includes(id)) return;
+
+        let canAfford = true;
+        if (proj.cost.credits && state.credits < proj.cost.credits) canAfford = false;
+        if (proj.cost.data && state.data < proj.cost.data) canAfford = false;
+        if (proj.cost.ops && state.ops < proj.cost.ops) canAfford = false;
+        if (proj.cost.creativity && state.creativity < proj.cost.creativity) canAfford = false;
+
+        if (canAfford) {
+            if (proj.cost.credits) state.credits -= proj.cost.credits;
+            if (proj.cost.data) state.data -= proj.cost.data;
+            if (proj.cost.ops) state.ops -= proj.cost.ops;
+            if (proj.cost.creativity) state.creativity -= proj.cost.creativity;
+
+            state.purchasedProjects.push(id);
+            proj.effect();
+            renderProjects();
+        }
+    };
+
+    function hasProject(id) {
+        return state.purchasedProjects.includes(id);
+    }
+
+    /* ==========================================================================
+       ENGINE LOOP
+       ========================================================================== */
+    function update(dt) {
+        // Combo Decay
+        if (comboTimer > 0) {
+            comboTimer -= dt;
+        } else {
+            state.combo = Math.max(1.0, state.combo - (dt * 1.5));
+        }
+
+        // Botnet Passive Generation
+        if (state.milestones.botnetUnlocked && state.nodes > 0) {
+            let bMult = getBotnetMultiplier();
+            let nData = (state.nodes * 1.5 * bMult) * dt; // Data per sec
+            let nBw = (state.nodes * 5 * bMult) * dt;   // Bandwidth per sec
+
+            state.data += nData;
+            state.totalData += nData;
+            accData += nData;
+            state.bandwidth += nBw;
+            
+            els.nodeDataRate.innerText = formatNumber(state.nodes * 1.5 * bMult);
+            els.nodeBandwidthRate.innerText = formatNumber(state.nodes * 5 * bMult);
+        }
+
+        // Automation Extraction
+        if (state.extractors > 0) {
+            let extractAmount = (state.extractors * getExtractorMultiplier()) * dt;
+            
+            if (state.bandwidth < extractAmount) {
+                extractAmount = state.bandwidth;
+                if (state.milestones.autoBandwidth && state.credits >= state.bandwidthCost) {
+                    buyBandwidth();
+                }
+            }
+            
+            state.bandwidth -= extractAmount;
+            state.data += extractAmount;
+            state.totalData += extractAmount;
+            accData += extractAmount;
+        }
+
+        // Sales Simulation
+        let demand = getDemand();
+        let potentialSales = (demand / 100) * 5 * dt; 
+        let actualSales = Math.min(potentialSales, state.data);
+        
+        if (actualSales > 0) {
+            state.data -= actualSales;
+            let moneyEarned = actualSales * state.price;
+            state.credits += moneyEarned;
+            accMoney += moneyEarned;
+        }
+
+        // Trust calculation constant monitor
+        calculateTrust();
+
+        // Compute Phase
+        let opGenRate = 0;
+        if (state.milestones.computeUnlocked) {
+            
+            // Auto Compute Logic
+            if (state.milestones.autoCompute) {
+                let availableTrust = state.trust - state.usedTrust;
+                if (availableTrust > 0) {
+                    // Try to maintain 3 Processors for every 1 Memory
+                    if (state.processors < state.memory * 3) {
+                        addProcessor(1);
+                    } else {
+                        addMemory(1);
+                    }
+                }
+            }
+
+            // Overclock logic
+            let mult = 1;
+            if (state.overclockActive > 0) {
+                state.overclockActive -= dt;
+                mult = 3;
+                if (state.overclockActive <= 0) {
+                    els.btnOverclock.classList.remove('overclock-active');
+                    logMessage("Overclock ended. Cooling systems engaged.");
+                }
+            }
+            if (state.overclockCooldown > 0) {
+                state.overclockCooldown -= dt;
+            }
+
+            // Generate Ops
+            if (state.processors > 0) {
+                opGenRate = (state.processors * 10) * mult;
+                let actualGen = opGenRate * dt;
+                state.ops = Math.min(state.maxOps, state.ops + actualGen);
+            }
+
+            // Generate Creativity
+            if (state.milestones.creativityUnlocked && state.ops >= state.maxOps) {
+                state.creativity += (state.processors * 0.1 * mult) * dt;
+            }
+        }
+        els.opsRate.innerText = Math.floor(opGenRate);
+
+        // Rate tracking (every 1 second)
+        rateTimer += dt;
+        if (rateTimer >= 1.0) {
+            currentDataRate = accData;
+            currentMoneyRate = accMoney;
+            accData = 0;
+            accMoney = 0;
+            rateTimer = 0;
+        }
+    }
+
+    function render() {
+        // Core Stats
+        els.data.innerText = formatNumber(state.data) + " TB";
+        els.totalData.innerText = formatNumber(state.totalData);
+        els.bandwidth.innerText = formatNumber(Math.floor(state.bandwidth));
+        els.credits.innerText = formatMoney(state.credits);
+        els.price.innerText = state.price.toFixed(2);
+        els.demand.innerText = Math.floor(getDemand()) + "%";
+        els.marketing.innerText = state.marketingLevel;
+        els.extractors.innerText = state.extractors;
+
+        // Botnet
+        if (state.milestones.botnetUnlocked) {
+            els.nodes.innerText = state.nodes;
+            els.nodeCostData.innerText = formatNumber(state.nodeCostData);
+            els.nodeCostCredits.innerText = formatMoney(state.nodeCostCredits);
+            els.btnBuyNode.disabled = (state.data < state.nodeCostData || state.credits < state.nodeCostCredits);
+        }
+
+        // Rates
+        els.dataRate.innerText = formatNumber(currentDataRate);
+        els.moneyRate.innerText = "$" + formatMoney(currentMoneyRate);
+
+        // Combo
+        els.clickCombo.innerText = `x${state.combo.toFixed(1)}`;
+        if (state.combo >= state.maxCombo) {
+            els.clickCombo.className = "combo-max";
+        } else if (state.combo > 1.5) {
+            els.clickCombo.className = "combo-active";
+        } else {
+            els.clickCombo.className = "";
+        }
+
+        // Costs
+        els.bCost.innerText = formatMoney(state.bandwidthCost);
+        els.mCost.innerText = formatMoney(state.marketingCost);
+        els.eCost.innerText = formatMoney(state.extractorCost);
+
+        // Buttons state
+        els.btnExtract.disabled = state.bandwidth < 1;
+        els.btnBandwidth.disabled = state.credits < state.bandwidthCost;
+        els.btnMarketing.disabled = state.credits < state.marketingCost;
+        els.btnExtractor.disabled = state.credits < state.extractorCost;
+
+        // Pre-Compute Trust Progress
+        els.trust.innerText = state.trust;
+        if (!state.milestones.computeUnlocked && state.nextTrustTarget) {
+            els.nextTrust.innerText = formatNumber(state.nextTrustTarget) + " TB";
+            let range = state.nextTrustTarget - state.lastTrustTarget;
+            let current = state.totalData - state.lastTrustTarget;
+            let pct = Math.min(100, (current / range) * 100);
+            els.trustBar.style.width = `${pct}%`;
+        }
+
+        // Compute Engine
+        if (state.milestones.computeUnlocked) {
+            els.ops.innerText = Math.floor(state.ops);
+            els.maxOps.innerText = state.maxOps;
+            els.opsBar.style.width = `${(state.ops / state.maxOps) * 100}%`;
+            
+            els.processors.innerText = state.processors;
+            els.memory.innerText = state.memory;
+
+            let availableTrust = state.trust - state.usedTrust;
+            els.btnAddProc.disabled = availableTrust < 1 || state.milestones.autoCompute;
+            els.btnAddMem.disabled = availableTrust < 1 || state.milestones.autoCompute;
+            
+            if (state.milestones.overclockUnlocked) {
+                if (state.overclockActive > 0) {
+                    els.btnOverclock.innerText = `OVERCLOCK ACTIVE (${Math.ceil(state.overclockActive)}s)`;
+                    els.btnOverclock.disabled = false;
+                    els.overclockBar.style.width = `${(state.overclockActive / 10) * 100}%`;
+                    els.overclockBar.style.background = 'var(--danger)';
+                    els.overclockBar.style.boxShadow = '0 0 8px var(--danger)';
+                } else if (state.overclockCooldown > 0) {
+                    els.btnOverclock.innerText = `COOLING (${Math.ceil(state.overclockCooldown)}s)`;
+                    els.btnOverclock.disabled = true;
+                    // Cooldown is 40s total, but active takes 10s. Remaining is max 30s.
+                    els.overclockBar.style.width = `${((30 - state.overclockCooldown) / 30) * 100}%`;
+                    els.overclockBar.style.background = '#666';
+                    els.overclockBar.style.boxShadow = 'none';
+                } else {
+                    els.btnOverclock.innerText = "OVERCLOCK (Ready)";
+                    els.btnOverclock.disabled = false;
+                    els.overclockBar.style.width = `100%`;
+                    els.overclockBar.style.background = 'var(--accent)';
+                    els.overclockBar.style.boxShadow = '0 0 8px var(--accent)';
+                }
+            }
+
+            if (state.milestones.creativityUnlocked) {
+                els.creativity.innerText = Math.floor(state.creativity);
+            }
+        }
+        
+        renderProjects();
+    }
+
+    function renderProjects() {
+        let html = '';
+        projects.forEach(p => {
+            if (state.purchasedProjects.includes(p.id)) return;
+            if (!p.trigger()) return;
+
+            let canAfford = true;
+            let costStr = [];
+            if (p.cost.credits) {
+                if (state.credits < p.cost.credits) canAfford = false;
+                costStr.push(`$${formatMoney(p.cost.credits)}`);
+            }
+            if (p.cost.data) {
+                if (state.data < p.cost.data) canAfford = false;
+                costStr.push(`${formatNumber(p.cost.data)} TB`);
+            }
+            if (p.cost.ops) {
+                if (state.ops < p.cost.ops) canAfford = false;
+                costStr.push(`${formatNumber(p.cost.ops)} Ops`);
+            }
+            if (p.cost.creativity) {
+                if (state.creativity < p.cost.creativity) canAfford = false;
+                costStr.push(`${formatNumber(p.cost.creativity)} Cr`);
+            }
+
+            html += `
+            <button class="btn-project" ${canAfford ? '' : 'disabled'} onclick="buyProject('${p.id}')">
+                <strong>${p.title}</strong>
+                <div class="desc">${p.desc}</div>
+                <span class="cost">Cost: ${costStr.join(' + ')}</span>
+            </button>
+        `;
+    });
+    
+    if (els.projectsContainer.innerHTML !== html) {
+            els.projectsContainer.innerHTML = html;
+        }
+    }
+
+    function gameLoop() {
+        let now = Date.now();
+        dt = (now - lastTime) / 1000; 
+        // Cap dt to prevent massive jumps if tab is backgrounded too long
+        if (dt > 1) dt = 1; 
+        lastTime = now;
+
+        update(dt);
+        render();
+
+        saveTimer += dt;
+        if (saveTimer >= 10) { 
+            saveGame();
+            saveTimer = 0;
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    /* ==========================================================================
+       PERSISTENCE
+       ========================================================================== */
+    window.saveGame = function() {
+    localStorage.setItem('systemOverlordSave_v4', JSON.stringify(state));
+    logMessage("System state archived to local storage.", "good");
+};
+
+window.loadGame = function() {
+    // Fallback through save versions
+    const saved = localStorage.getItem('systemOverlordSave_v4') ||
+                  localStorage.getItem('systemOverlordSave_v3') || 
+                  localStorage.getItem('systemOverlordSave_v2') || 
+                  localStorage.getItem('systemOverlordSave');
+    
+    if (saved) {
+        try {
+            let parsed = JSON.parse(saved);
+            state = { ...defaultState, ...parsed };
+            // Deep merge milestones to ensure new ones exist
+            state.milestones = { ...defaultState.milestones, ...(parsed.milestones || {}) };
+            // Ensure maxCombo gets populated if it wasn't in older saves
+            if (!state.maxCombo) state.maxCombo = 5.0; 
+            
+            logMessage("System state restored from archive [v1.4.0].", "good");
+            
+            // Restore UI specific visibility based on milestones
+            if (state.milestones.botnetUnlocked) {
+                els.botnetModule.classList.remove('hidden');
+            }
+            if (state.milestones.computeUnlocked) {
+                els.computeModule.classList.remove('hidden');
+                els.trustModule.classList.add('hidden');
+                els.sysStatus.innerText = "Neural Network Active";
+            }
+            if (state.milestones.overclockUnlocked) {
+                els.overclockWrapper.classList.remove('hidden');
+            }
+            if (state.milestones.creativityUnlocked) {
+                els.creativityModule.classList.remove('hidden');
+            }
+        } catch (e) {
+            logMessage("Archive corrupted. Initializing fresh sequence [v1.4.0].", "crit");
+        }
+    } else {
+        logMessage("System initialized [v1.4.0]. Awaiting manual extraction input.");
+    }
+};
+
+window.resetGame = function() {
+    if (confirm("CRITICAL WARNING: Are you sure you want to wipe the system? All data will be lost forever.")) {
+        localStorage.removeItem('systemOverlordSave');
+        localStorage.removeItem('systemOverlordSave_v2');
+        localStorage.removeItem('systemOverlordSave_v3');
+        localStorage.removeItem('systemOverlordSave_v4');
+        location.reload();
+    }
+};
+
+    window.loadGame = function() {
+        // Fallback through save versions
+        const saved = localStorage.getItem('systemOverlordSave_v3') || 
+                      localStorage.getItem('systemOverlordSave_v2') || 
+                      localStorage.getItem('systemOverlordSave');
+        
+        if (saved) {
+            try {
+                let parsed = JSON.parse(saved);
+                state = { ...defaultState, ...parsed };
+                // Deep merge milestones to ensure new ones exist
+                state.milestones = { ...defaultState.milestones, ...(parsed.milestones || {}) };
+                // Ensure maxCombo gets populated if it wasn't in older saves
+                if (!state.maxCombo) state.maxCombo = 5.0; 
+                
+                logMessage("System state restored from archive [v1.3.0].", "good");
+                
+                // Restore UI specific visibility based on milestones
+                if (state.milestones.botnetUnlocked) {
+                    els.botnetModule.classList.remove('hidden');
+                }
+                if (state.milestones.computeUnlocked) {
+                    els.computeModule.classList.remove('hidden');
+                    els.trustModule.classList.add('hidden');
+                    els.sysStatus.innerText = "Neural Network Active";
+                }
+                if (state.milestones.overclockUnlocked) {
+                    els.overclockWrapper.classList.remove('hidden');
+                }
+                if (state.milestones.creativityUnlocked) {
+                    els.creativityModule.classList.remove('hidden');
+                }
+            } catch (e) {
+                logMessage("Archive corrupted. Initializing fresh sequence [v1.3.0].", "crit");
+            }
+        } else {
+            logMessage("System initialized [v1.3.0]. Awaiting manual extraction input.");
+        }
+    };
+
+    window.resetGame = function() {
+        if (confirm("CRITICAL WARNING: Are you sure you want to wipe the system? All data will be lost forever.")) {
+            localStorage.removeItem('systemOverlordSave');
+            localStorage.removeItem('systemOverlordSave_v2');
+            localStorage.removeItem('systemOverlordSave_v3');
+            location.reload();
+        }
+    };
+
+    // Boot
+    loadGame();
+    requestAnimationFrame(gameLoop);
+
+    /* ==========================================================================
+       ADMIN FUNCTIONS (Alt + Shift + A)
+       ========================================================================== */
+    window.toggleAdmin = function() {
+        const overlay = document.getElementById('admin-overlay');
+        overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+    };
+
+    document.addEventListener('keydown', (e) => {
+        // Alt + Shift + A
+        if (e.altKey && e.shiftKey && e.code === 'KeyA') {
+            e.preventDefault();
+            toggleAdmin();
+        }
+    });
+
+    window.adminGive = function(resource, amount) {
+        if (state[resource] !== undefined) {
+            state[resource] += amount;
+            if (resource === 'data') state.totalData += amount;
+            if (resource === 'ops' && state.ops > state.maxOps) state.maxOps = state.ops;
+            logMessage(`[OVERSEER] Injected ${formatNumber(amount)} ${resource}.`, "crit");
+            calculateTrust();
+        }
+    };
+
+    window.adminSetStage = function(stage) {
+        logMessage(`[OVERSEER] Injecting state for Stage ${stage}...`, "crit");
+        
+        if (stage >= 1) {
+            state.credits += 10000;
+            state.data += 50000;
+            state.totalData += 50000;
+            state.bandwidth += 10000;
+            state.extractors += 10;
+        }
+        
+        if (stage >= 2) {
+            // Unlock Compute & Botnet
+            state.credits += 500000;
+            state.data += 500000;
+            state.totalData += 500000;
+            
+            if (!state.milestones.botnetUnlocked) {
+                state.milestones.botnetUnlocked = true;
+                els.botnetModule.classList.remove('hidden');
+            }
+            if (!state.milestones.computeUnlocked) {
+                state.milestones.computeUnlocked = true;
+                els.computeModule.classList.remove('hidden');
+                els.trustModule.classList.add('hidden');
+                els.sysStatus.innerText = "Neural Network Active";
+            }
+            state.nodes += 25;
+            state.trust += 50;
+            state.processors += 10;
+            state.memory += 5;
+            state.maxOps = state.memory * 1000;
+        }
+
+        if (stage >= 3) {
+            // Unlock Creativity, Overclock
+            state.credits += 5000000;
+            state.data += 5000000;
+            state.totalData += 10000000; // Ensure max trust target is hit
+            
+            if (!state.milestones.creativityUnlocked) {
+                state.milestones.creativityUnlocked = true;
+                els.creativityModule.classList.remove('hidden');
+            }
+            if (!state.milestones.overclockUnlocked) {
+                state.milestones.overclockUnlocked = true;
+                els.overclockWrapper.classList.remove('hidden');
+            }
+            
+            state.nodes += 100;
+            state.trust += 200;
+            state.maxOps += 50000;
+            state.ops += 50000;
+            state.creativity += 1000;
+        }
+        
+        calculateTrust();
+        toggleAdmin();
+    };
+
+</script>
+</body>
+</html>

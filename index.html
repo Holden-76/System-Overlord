@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Overlord - Launcher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #00e8ff;
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+        }
+        h1 { font-size: 3rem; text-shadow: 0 0 10px rgba(0,232,255,0.5); margin-bottom: 10px; }
+        p { font-size: 1.2rem; color: #888; max-width: 600px; line-height: 1.5; margin-bottom: 40px; }
+        .btn-launch {
+            background: transparent;
+            color: #00e8ff;
+            border: 2px solid #00e8ff;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 0 15px rgba(0,232,255,0.2);
+        }
+        .btn-launch:hover {
+            background: rgba(0,232,255,0.2);
+            box-shadow: 0 0 25px rgba(0,232,255,0.6);
+            text-shadow: 0 0 5px #fff;
+        }
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            color: #444;
+            font-size: 0.9rem;
+        }
+        .footer a { color: #888; text-decoration: none; }
+        .footer a:hover { color: #00e8ff; }
+    </style>
+</head>
+<body>
+    <h1>SYSTEM OVERLORD</h1>
+    <p>Version 2.7.0: "The Deep Web Update"</p>
+    <div style="margin-top:20px;">
+        <span class="status-indicator"></span>
+        <span style="color:#00ff88;">All systems nominal</span>
+    </div>
+    
+    <a href="releases/v2.7.0/system_overlord_v2_7_0.html" class="btn-launch">INITIALIZE KERNEL (v2.7.0)</a>
+
+    <div class="footer">
+        <a href="https://github.com/your-username/System-Overlord">View Source Code on GitHub</a> | 
+        <a href="legacy/">Legacy Archives</a>
+    </div>
+</body>
+</html>

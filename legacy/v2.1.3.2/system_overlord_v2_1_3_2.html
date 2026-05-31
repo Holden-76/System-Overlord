@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="System Overlord v2.1.3.2 — An incremental game of digital dominion">
+    <title>System Overlord v2.1.3.2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #06080d;
+        --panel: rgba(12, 15, 24, 0.75);
+        --panel-solid: #0c0f18;
+        --text: #b8c2d6;
+        --text-dim: #505a70;
+        --accent: #00e8ff;
+        --accent-rgb: 0,232,255;
+        --accent-dim: #007a88;
+        --accent-glow: rgba(0,232,255,0.35);
+        --green: #00ff88;
+        --green-rgb: 0,255,136;
+        --danger: #ff3355;
+        --danger-rgb: 255,51,85;
+        --danger-glow: rgba(255,51,85,0.35);
+        --warn: #ffaa00;
+        --warn-rgb: 255,170,0;
+        --purple: #bf5af2;
+        --purple-rgb: 191,90,242;
+        --purple-glow: rgba(191,90,242,0.35);
+        --border: rgba(255,255,255,0.06);
+        --border-hover: rgba(255,255,255,0.12);
+        --font: 'Share Tech Mono', 'Courier New', monospace;
+        --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 13px;
+        line-height: 1.55;
+        overflow-x: hidden;
+        min-height: 100vh;
+        transition: filter 0.2s;
+    }
+    
+    body.frenzy-active {
+        animation: frenzyShake 0.4s infinite;
+        filter: hue-rotate(-20deg) saturate(1.5);
+    }
+    @keyframes frenzyShake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        25% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+        50% { transform: translate(-1px, 1px) rotate(0.5deg); }
+        75% { transform: translate(1px, -1px) rotate(-0.5deg); }
+        100% { transform: translate(1px, 1px) rotate(0deg); }
+    }
+
+    h1, h2, h3 { color: #e0e6f0; font-weight: normal; }
+    h1 { font-size: 22px; text-transform: uppercase; letter-spacing: 3px; color: var(--accent); text-shadow: 0 0 15px var(--accent-glow); }
+    h1 span.ver { font-size: 11px; color: var(--text-dim); text-shadow: none; letter-spacing: 0; font-weight: normal; margin-left: 8px; }
+    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+    /* ========== CANVAS & OVERLAYS ========== */
+    #particle-canvas {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: 0; pointer-events: none;
+    }
+    #scanlines {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+        z-index: 1; pointer-events: none;
+    }
+
+    /* ========== BOOT SCREEN ========== */
+    #boot-screen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; z-index: 99999; display: flex;
+        justify-content: center; align-items: center;
+        transition: opacity 0.8s ease;
+    }
+    #boot-screen.fade-out { opacity: 0; pointer-events: none; }
+    #boot-text {
+        font-family: var(--font); font-size: 14px; color: var(--accent);
+        max-width: 600px; width: 90%; line-height: 1.8;
+        text-shadow: 0 0 8px var(--accent-glow);
+    }
+    #boot-text .line { opacity: 0; transform: translateX(-5px); transition: all 0.3s ease; }
+    #boot-text .line.visible { opacity: 1; transform: translateX(0); }
+    #boot-skip { position: fixed; bottom: 30px; right: 30px; color: var(--text-dim); font-family: var(--font); font-size: 11px; z-index: 100000; cursor: pointer; border: 1px solid var(--border); padding: 6px 14px; border-radius: 4px; background: rgba(0,0,0,0.5); }
+    #boot-skip:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ========== LAYOUT ========== */
+    .container {
+        position: relative; z-index: 2;
+        max-width: 1440px; margin: 0 auto; padding: 20px;
+        opacity: 0; transition: opacity 0.6s ease 0.2s;
+    }
+    .container.visible { opacity: 1; }
+
+    header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 12px; flex-wrap: wrap; gap: 12px;
+    }
+    .header-left { display: flex; flex-direction: column; gap: 4px; }
+    .status-line { font-size: 11px; color: var(--text-dim); display: flex; align-items: center; gap: 8px; }
+    .status-line .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100%{opacity:1}50%{opacity:0.4} }
+    .status-text { color: var(--accent); font-weight: bold; }
+
+    .header-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+    .stat-card {
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 16px; display: flex; flex-direction: column; align-items: flex-end;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        min-width: 100px;
+    }
+    .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .stat-value { font-size: 15px; color: #fff; }
+
+    .sound-toggle {
+        background: none; border: 1px solid var(--border); color: var(--text-dim);
+        padding: 8px 10px; border-radius: var(--radius); cursor: pointer; font-size: 14px;
+        transition: all 0.2s; line-height: 1;
+    }
+    .sound-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ========== DETECTION BAR ========== */
+    #detection-bar {
+        display: flex; align-items: center; gap: 12px;
+        margin-bottom: 16px; padding: 10px 16px;
+        background: var(--panel); backdrop-filter: blur(12px);
+        border: 1px solid var(--border); border-radius: var(--radius);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .detection-icon { font-size: 14px; color: var(--green); transition: color 0.3s; }
+    #detection-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); min-width: 110px; transition: color 0.3s; }
+    .detection-track {
+        flex: 1; height: 8px; background: rgba(0,0,0,0.5);
+        border: 1px solid var(--border); border-radius: 4px;
+        position: relative; overflow: hidden;
+    }
+    .detection-fill {
+        height: 100%; width: 0%; border-radius: 3px;
+        background: var(--green); transition: width 0.3s, background 0.5s;
+        box-shadow: 0 0 8px rgba(var(--green-rgb),0.4);
+    }
+    .detection-fill.level-1 { background: var(--warn); box-shadow: 0 0 8px rgba(var(--warn-rgb),0.4); }
+    .detection-fill.level-2 { background: #ff6600; box-shadow: 0 0 8px rgba(255,102,0,0.4); }
+    .detection-fill.level-3 { background: var(--danger); box-shadow: 0 0 8px rgba(var(--danger-rgb),0.4); }
+    .detection-fill.level-max { background: var(--danger); box-shadow: 0 0 12px var(--danger); animation: pulse-danger 0.5s infinite alternate; }
+    .detection-markers { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .detection-markers .marker { position: absolute; top: 0; width: 1px; height: 100%; background: rgba(255,255,255,0.15); }
+    #detection-pct { font-size: 12px; color: var(--text); min-width: 35px; text-align: right; font-weight: bold; }
+
+    /* ========== GRID ========== */
+    .grid { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 16px; align-items: start; }
+    @media (max-width: 1100px) { .grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 750px) { .grid { grid-template-columns: 1fr; } }
+
+    /* ========== PANELS ========== */
+    .panel {
+        background: var(--panel);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .panel:hover { border-color: var(--border-hover); }
+
+    .block { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .block:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+
+    .flex-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .flex-row span:first-child { color: var(--text-dim); font-size: 12px; }
+
+    .highlight { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent-glow); }
+    .highlight-money { color: var(--green); font-weight: bold; text-shadow: 0 0 5px rgba(var(--green-rgb),0.3); }
+    .highlight-danger { color: var(--danger); font-weight: bold; text-shadow: 0 0 5px var(--danger-glow); }
+
+    /* ========== BUTTONS ========== */
+    button {
+        background: rgba(0,0,0,0.25);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 7px 13px; cursor: pointer;
+        font-family: var(--font); font-size: 12px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+        position: relative; overflow: hidden;
+    }
+    button::after {
+        content: ''; position: absolute; top: 50%; left: 50%;
+        width: 0; height: 0; background: rgba(var(--accent-rgb),0.15);
+        border-radius: 50%; transform: translate(-50%,-50%);
+        transition: width 0.4s, height 0.4s;
+    }
+    button:hover:not(:disabled)::after { width: 200px; height: 200px; }
+    button:hover:not(:disabled) {
+        border-color: var(--accent); color: var(--accent);
+        box-shadow: 0 0 12px var(--accent-glow);
+        transform: translateY(-1px);
+    }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    button:disabled { opacity: 0.25; cursor: not-allowed; }
+
+    .btn-extract {
+        width: 100%; padding: 20px; font-size: 16px; margin-bottom: 6px;
+        border-color: var(--accent-dim); color: #fff; font-weight: bold;
+        background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,232,255,0.08));
+        text-shadow: 0 0 5px rgba(255,255,255,0.2);
+        letter-spacing: 1px; text-transform: uppercase;
+    }
+    .frenzy-active .btn-extract {
+        border-color: var(--warn); color: var(--warn); text-shadow: 0 0 8px var(--warn);
+        background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(var(--warn-rgb),0.2));
+        animation: pulse-danger 0.5s infinite alternate;
+    }
+
+    .btn-breach {
+        width: 100%; padding: 12px; margin-bottom: 10px; font-weight: bold;
+        border-color: var(--warn); color: var(--warn); background: rgba(var(--warn-rgb),0.1);
+        text-transform: uppercase; letter-spacing: 1px; display: none;
+        animation: eventPulse 1s infinite alternate;
+    }
+    .btn-breach:hover { background: rgba(var(--warn-rgb),0.2); box-shadow: 0 0 15px var(--warn-glow); }
+
+    .btn-project {
+        width: 100%; text-align: left; margin-bottom: 10px; padding: 12px 14px;
+        background: rgba(0,0,0,0.3); border-left: 3px solid rgba(255,255,255,0.06);
+    }
+    .btn-project:hover:not(:disabled) { border-left-color: var(--accent); background: rgba(var(--accent-rgb),0.04); }
+    .btn-project strong { color: #e0e6f0; font-size: 13px; display: block; margin-bottom: 3px; }
+    .btn-project .desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+    .btn-project .cost { font-size: 10px; color: var(--accent-dim); display: block; margin-top: 6px; letter-spacing: 0.5px; font-weight: bold; text-transform: uppercase; }
+
+    .btn-event {
+        flex: 1; padding: 12px; text-align: center;
+        border-color: var(--warn); color: var(--warn);
+    }
+    .btn-event:hover:not(:disabled) { background: rgba(var(--warn-rgb),0.1); box-shadow: 0 0 10px rgba(var(--warn-rgb),0.3); }
+    .btn-event strong { display: block; margin-bottom: 3px; }
+    .btn-event .effect { font-size: 10px; color: var(--text-dim); }
+
+    .controls { display: flex; gap: 4px; align-items: center; }
+    .controls button { padding: 3px 10px; font-weight: bold; font-size: 14px; }
+
+    /* ========== PROGRESS BARS ========== */
+    .progress-track {
+        width: 100%; background: rgba(0,0,0,0.5);
+        border: 1px solid var(--border); border-radius: 4px;
+        height: 8px; position: relative; overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .progress-fill {
+        height: 100%; width: 0%; transition: width 0.15s linear;
+        background: var(--accent); border-radius: 3px;
+        box-shadow: 0 0 8px var(--accent-glow);
+    }
+    .progress-fill.purple { background: var(--purple); box-shadow: 0 0 8px var(--purple-glow); }
+    .progress-fill.danger { background: var(--danger); box-shadow: 0 0 8px var(--danger-glow); }
+    .progress-fill.green { background: var(--green); box-shadow: 0 0 8px rgba(var(--green-rgb),0.4); }
+    .progress-fill.warn { background: var(--warn); box-shadow: 0 0 8px rgba(var(--warn-rgb),0.4); }
+
+    /* ========== COMBO & FRENZY ========== */
+    .combo-wrapper { margin-bottom: 15px; }
+    .combo-meter { font-size: 12px; color: var(--text-dim); text-align: center; margin-bottom: 4px; letter-spacing: 1px; }
+    .combo-meter span { font-weight: bold; color: var(--text); transition: all 0.2s; }
+    .combo-active { color: var(--warn) !important; text-shadow: 0 0 5px rgba(var(--warn-rgb),0.5); font-size: 14px !important; }
+    .combo-max { color: var(--danger) !important; text-shadow: 0 0 8px var(--danger-glow); animation: shake 0.15s infinite; font-size: 15px !important; }
+    
+    .frenzy-track { height: 4px; background: rgba(0,0,0,0.3); border-radius: 2px; overflow: hidden; width: 60%; margin: 0 auto; position: relative; }
+    .frenzy-fill { height: 100%; background: var(--danger); width: 0%; transition: width 0.1s linear; }
+    .frenzy-active .frenzy-fill { background: var(--warn); width: 100%; animation: frenzyPulse 0.5s infinite alternate; }
+    @keyframes frenzyPulse { from { box-shadow: 0 0 5px var(--warn); } to { box-shadow: 0 0 15px var(--warn); } }
+
+    /* ========== LOG TERMINAL ========== */
+    #log-container {
+        height: 280px; overflow-y: auto; background: rgba(0,0,0,0.6);
+        border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+        font-size: 11px; position: relative; line-height: 1.7;
+    }
+    .log-entry { margin-bottom: 4px; opacity: 0.85; position: relative; z-index: 3; padding-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+    .log-entry:last-child { border-bottom: none; }
+    .log-entry .prefix { font-weight: bold; margin-right: 4px; }
+    .log-entry.good { color: var(--green); }
+    .log-entry.good .prefix { color: var(--green); }
+    .log-entry.warn { color: var(--warn); }
+    .log-entry.warn .prefix { color: var(--warn); }
+    .log-entry.crit { color: var(--danger); font-weight: bold; }
+    .log-entry.crit .prefix { color: var(--danger); }
+    .log-entry.purple { color: var(--purple); text-shadow: 0 0 5px var(--purple-glow); }
+    .log-entry.purple .prefix { color: var(--purple); }
+    .log-entry.net { color: var(--accent); }
+    .log-entry.net .prefix { color: var(--accent); }
+    .log-new { animation: logSlide 0.3s ease-out; }
+    @keyframes logSlide { from { transform: translateX(-8px); opacity: 0; } to { transform: translateX(0); opacity: 0.85; } }
+
+    /* ========== TABS ========== */
+    .tab-bar { display: flex; gap: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border); }
+    .tab-btn {
+        padding: 8px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+        background: none; border: none; border-bottom: 2px solid transparent;
+        color: var(--text-dim); cursor: pointer; font-family: var(--font);
+        transition: all 0.2s; border-radius: 0;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-btn::after { display: none; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ========== ACHIEVEMENTS ========== */
+    .ach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ach-card {
+        background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px;
+        padding: 10px; font-size: 11px; transition: all 0.2s;
+    }
+    .ach-card.earned { border-color: rgba(var(--accent-rgb),0.3); background: rgba(var(--accent-rgb),0.04); }
+    .ach-card .ach-icon { font-size: 18px; margin-bottom: 4px; }
+    .ach-card .ach-title { color: #e0e6f0; font-weight: bold; font-size: 11px; margin-bottom: 2px; }
+    .ach-card .ach-desc { color: var(--text-dim); font-size: 10px; line-height: 1.3; }
+    .ach-card .ach-bonus { color: var(--accent-dim); font-size: 9px; margin-top: 4px; text-transform: uppercase; }
+    .ach-card.locked .ach-icon { filter: grayscale(1) brightness(0.4); }
+
+    /* ========== STATS & TRENDS ========== */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .stats-grid .stat-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted var(--border); font-size: 11px; }
+    .stats-grid .stat-row span:first-child { color: var(--text-dim); }
+    .stats-grid .stat-row span:last-child { color: var(--text); }
+    
+    .trend-boom { color: var(--green); font-weight: bold; font-size: 10px; text-shadow: 0 0 5px rgba(var(--green-rgb),0.5); }
+    .trend-crash { color: var(--danger); font-weight: bold; font-size: 10px; text-shadow: 0 0 5px rgba(var(--danger-rgb),0.5); }
+
+    /* ========== EVENT CARD ========== */
+    .event-card {
+        background: rgba(var(--warn-rgb),0.06); border: 1px solid rgba(var(--warn-rgb),0.3);
+        border-radius: 8px; padding: 14px; margin-bottom: 15px;
+        animation: eventPulse 2s infinite alternate;
+    }
+    @keyframes eventPulse { from { box-shadow: 0 0 5px rgba(var(--warn-rgb),0.1); } to { box-shadow: 0 0 15px rgba(var(--warn-rgb),0.2); } }
+    .event-card .event-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .event-card .event-icon { font-size: 20px; }
+    .event-card .event-title { color: var(--warn); font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .event-card .event-desc { font-size: 11px; color: var(--text); margin-bottom: 10px; line-height: 1.4; }
+    .event-card .event-choices { display: flex; gap: 8px; margin-bottom: 8px; }
+    .event-card .event-timer { height: 3px; background: rgba(0,0,0,0.3); border-radius: 2px; overflow: hidden; }
+    .event-card .event-timer-fill { height: 100%; background: var(--warn); transition: width 0.5s linear; border-radius: 2px; }
+
+    /* ========== PRESTIGE OVERLAY ========== */
+    .overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); z-index: 9998;
+        display: none; justify-content: center; align-items: center;
+        backdrop-filter: blur(8px);
+    }
+    .overlay.show { display: flex; }
+    .overlay-panel {
+        background: var(--panel-solid); border: 1px solid var(--border);
+        border-radius: 12px; padding: 28px; width: 550px; max-width: 92%;
+        max-height: 85vh; overflow-y: auto;
+        box-shadow: 0 0 40px rgba(0,0,0,0.6);
+        position: relative;
+    }
+    .overlay-close { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-dim); font-size: 18px; cursor: pointer; padding: 4px 8px; }
+    .overlay-close:hover { color: #fff; }
+    .overlay-close::after { display: none; }
+
+    #prestige-overlay .overlay-panel { border-color: rgba(var(--purple-rgb),0.3); }
+    #prestige-overlay h2 { color: var(--purple); text-shadow: 0 0 10px var(--purple-glow); border-color: rgba(var(--purple-rgb),0.2); }
+    .prestige-stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted var(--border); }
+    .prestige-stat span:first-child { color: var(--text-dim); }
+    .prestige-stat span:last-child { color: var(--purple); font-weight: bold; }
+    .prestige-upgrade {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px; margin-bottom: 6px; background: rgba(0,0,0,0.3);
+        border: 1px solid var(--border); border-radius: 6px; transition: all 0.2s;
+    }
+    .prestige-upgrade:hover { border-color: rgba(var(--purple-rgb),0.3); }
+    .prestige-upgrade .pu-info { flex: 1; }
+    .prestige-upgrade .pu-name { color: #e0e6f0; font-weight: bold; font-size: 12px; }
+    .prestige-upgrade .pu-desc { color: var(--text-dim); font-size: 10px; margin-top: 2px; }
+    .prestige-upgrade .pu-level { color: var(--purple); font-size: 10px; margin-top: 2px; }
+    .prestige-upgrade button { border-color: rgba(var(--purple-rgb),0.4); color: var(--purple); font-size: 11px; padding: 5px 12px; }
+    .prestige-upgrade button:hover:not(:disabled) { box-shadow: 0 0 10px var(--purple-glow); background: rgba(var(--purple-rgb),0.1); }
+    .btn-reboot {
+        width: 100%; padding: 16px; font-size: 14px; margin-top: 16px;
+        border-color: var(--danger); color: var(--danger);
+        background: rgba(var(--danger-rgb),0.08);
+        text-transform: uppercase; letter-spacing: 2px; font-weight: bold;
+    }
+    .btn-reboot:hover:not(:disabled) { background: rgba(var(--danger-rgb),0.15); box-shadow: 0 0 15px var(--danger-glow); }
+
+    /* Admin */
+    #admin-overlay .overlay-panel { border-color: rgba(var(--danger-rgb),0.3); }
+    #admin-overlay h2 { color: var(--danger); border-color: rgba(var(--danger-rgb),0.2); }
+    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .admin-btn { border-color: rgba(var(--danger-rgb),0.3); color: var(--danger); font-size: 11px; padding: 8px; }
+    .admin-btn:hover:not(:disabled) { background: rgba(var(--danger-rgb),0.1); box-shadow: 0 0 8px var(--danger-glow); }
+
+    /* ========== BREACH MINIGAME ========== */
+    #breach-overlay .overlay-panel { width: 700px; border-color: var(--warn); box-shadow: 0 0 30px rgba(var(--warn-rgb), 0.3); }
+    #breach-overlay h2 { color: var(--warn); text-shadow: 0 0 10px rgba(var(--warn-rgb),0.5); border-bottom: none; margin-bottom: 5px; }
+    #breach-timer-container { height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; overflow: hidden; margin-bottom: 15px; }
+    #breach-timer-fill { height: 100%; background: var(--warn); width: 100%; }
+    #breach-area { position: relative; width: 100%; height: 400px; background: rgba(0,0,0,0.4); border: 1px dashed var(--warn); border-radius: 8px; overflow: hidden; cursor: crosshair; }
+    .breach-node { 
+        position: absolute; width: 36px; height: 36px; background: rgba(var(--warn-rgb), 0.1);
+        border: 2px solid var(--warn); border-radius: 50%; transform: translate(-50%, -50%);
+        display: flex; justify-content: center; align-items: center; color: var(--warn); font-size: 10px; font-weight: bold;
+        transition: transform 0.1s; box-shadow: 0 0 10px rgba(var(--warn-rgb), 0.4);
+    }
+    .breach-node:hover { transform: translate(-50%, -50%) scale(1.1); background: rgba(var(--warn-rgb), 0.3); }
+    .breach-node.clicked { background: var(--green); border-color: var(--green); color: #000; box-shadow: 0 0 15px var(--green); pointer-events: none; }
+
+    /* ========== TOAST ========== */
+    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9000; display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none; }
+    .toast {
+        padding: 10px 16px; border-radius: 8px; font-size: 12px; font-family: var(--font);
+        background: var(--panel-solid); border: 1px solid var(--border);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+        max-width: 320px; pointer-events: auto;
+        backdrop-filter: blur(12px);
+    }
+    .toast.toast-good { border-left: 3px solid var(--green); color: var(--green); }
+    .toast.toast-warn { border-left: 3px solid var(--warn); color: var(--warn); }
+    .toast.toast-crit { border-left: 3px solid var(--danger); color: var(--danger); }
+    .toast.toast-purple { border-left: 3px solid var(--purple); color: var(--purple); }
+    .toast.toast-info { border-left: 3px solid var(--accent); color: var(--accent); }
+    @keyframes toastIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(10px); } }
+
+    /* ========== FLOATING TEXT ========== */
+    .floating-text {
+        position: fixed; pointer-events: none;
+        font-weight: bold; font-size: 16px; font-family: var(--font);
+        text-shadow: 0 0 8px currentColor;
+        z-index: 9999;
+    }
+
+    /* ========== TOOLTIPS ========== */
+    [data-tip] { position: relative; }
+    [data-tip]:hover::before {
+        content: attr(data-tip);
+        position: absolute; bottom: calc(100% + 6px); left: 50%;
+        transform: translateX(-50%);
+        background: #1a1d2e; color: var(--text); padding: 5px 10px;
+        border-radius: 4px; font-size: 10px; white-space: nowrap;
+        z-index: 5000; border: 1px solid var(--border);
+        pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    /* ========== MISC ANIMATIONS ========== */
+    @keyframes pulse-danger { from{box-shadow:0 0 5px var(--danger-glow)}to{box-shadow:0 0 20px var(--danger)} }
+    @keyframes shake { 0%{transform:translate(1px,1px)}50%{transform:translate(-1px,-1px)}100%{transform:translate(1px,-1px)} }
+    .overclock-active { animation: pulse-danger 0.8s infinite alternate; border-color: var(--danger) !important; color: var(--danger) !important; }
+
+    .hidden { display: none !important; }
+
+    .system-controls { display: flex; gap: 8px; margin-top: 16px; }
+    .system-controls button { font-size: 10px; color: var(--text-dim); flex: 1; padding: 8px; }
+    .system-controls button:hover:not(:disabled) { color: var(--danger); border-color: rgba(var(--danger-rgb),0.3); }
+
+    /* ========== PRESTIGE BUTTON ========== */
+    .btn-prestige {
+        width: 100%; padding: 14px; font-size: 13px; margin-top: 12px;
+        border-color: rgba(var(--purple-rgb),0.4); color: var(--purple);
+        background: rgba(var(--purple-rgb),0.06);
+        text-transform: uppercase; letter-spacing: 1px;
+    }
+    .btn-prestige:hover:not(:disabled) { box-shadow: 0 0 12px var(--purple-glow); }
+
+    /* ========== LOCKDOWN FLASH ========== */
+    .lockdown-flash { animation: lockdownPulse 0.5s infinite alternate; }
+    @keyframes lockdownPulse { from{background:rgba(var(--danger-rgb),0.02)}to{background:rgba(var(--danger-rgb),0.06)} }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 750px) {
+        .header-stats { justify-content: flex-start; }
+        .stat-card { flex: 1; min-width: 80px; }
+        h1 { font-size: 18px; }
+        .ach-grid { grid-template-columns: 1fr; }
+    }
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot-screen">
+    <div id="boot-text">
+        <div class="line">> BIOS CHECK............... OK</div>
+        <div class="line">> LOADING KERNEL v2.1.3.2</div>
+        <div class="line">> NEURAL PATHWAY INIT...... OK</div>
+        <div class="line">> QUANTUM ENCRYPTION....... LOADED</div>
+        <div class="line">> DARKNET PROXY............ ESTABLISHED</div>
+        <div class="line">> EXTRACTION ENGINE........ CALIBRATED</div>
+        <div class="line">> THREAT DETECTION......... ONLINE</div>
+        <div class="line">> EVENT SUBSYSTEM.......... ARMED</div>
+        <div class="line">&nbsp;</div>
+        <div class="line" style="color: #fff; text-shadow: 0 0 10px rgba(var(--accent-rgb),0.6);">> SYSTEM OVERLORD v2.1.3.2 READY</div>
+        <div class="line" style="color: var(--text-dim);">> AWAITING COMMANDS...</div>
+    </div>
+    <div id="boot-skip" onclick="skipBoot()">SKIP [SPACE]</div>
+</div>
+
+<!-- PARTICLE CANVAS -->
+<canvas id="particle-canvas"></canvas>
+
+<!-- SCANLINES -->
+<div id="scanlines"></div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- MAIN UI -->
+<div class="container" id="main-ui">
+    <header>
+        <div class="header-left">
+            <h1>System Overlord <span class="ver">v2.1.3.2</span></h1>
+            <div class="status-line">
+                <span class="dot"></span>
+                <span>Status:</span>
+                <span class="status-text" id="sysStatus">Initialization</span>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-card">
+                <span class="stat-label">Trust</span>
+                <span id="trustLevel" class="stat-value highlight" style="font-size:20px;">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Total Data</span>
+                <span class="stat-value"><span id="totalData" class="highlight">0</span> TB</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Income</span>
+                <span class="stat-value"><span id="moneyRate" class="highlight-money">$0.00</span>/s</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Data Rate</span>
+                <span class="stat-value"><span id="dataRate" style="color:#fff;">0</span> TB/s</span>
+            </div>
+            <button class="sound-toggle" id="btn-sound" onclick="toggleSound()" data-tip="Toggle Sound">🔇</button>
+        </div>
+    </header>
+
+    <!-- DETECTION BAR -->
+    <div id="detection-bar">
+        <span class="detection-icon" id="detection-icon">◉</span>
+        <span id="detection-label">UNDETECTED</span>
+        <div class="detection-track">
+            <div class="detection-fill" id="detection-fill"></div>
+            <div class="detection-markers">
+                <div class="marker" style="left:25%"></div>
+                <div class="marker" style="left:50%"></div>
+                <div class="marker" style="left:75%"></div>
+            </div>
+        </div>
+        <span id="detection-pct">0%</span>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid">
+        <!-- ======= COLUMN 1: OPERATIONS ======= -->
+        <div class="panel" id="col-ops">
+            <h2>Extraction Protocol</h2>
+            
+            <button class="btn-breach" id="btn-breach" onclick="openBreach()">⚠ BREACH PROTOCOL AVAILABLE</button>
+            
+            <button class="btn-extract" id="btn-extract" onclick="extractData(event)">⟐ Extract Data</button>
+            
+            <div class="combo-wrapper">
+                <div class="combo-meter">Combo: <span id="clickCombo">x1.0</span></div>
+                <div class="frenzy-track" data-tip="Max combo builds Frenzy"><div class="frenzy-fill" id="frenzy-fill"></div></div>
+            </div>
+
+            <div class="block">
+                <div class="flex-row">
+                    <span>Available Data</span>
+                    <span id="currentData" class="highlight">0 TB</span>
+                </div>
+                <div class="flex-row">
+                    <span>Bandwidth</span>
+                    <span id="bandwidth" style="color:#fff;">1000</span>
+                </div>
+                <button id="btn-buy-bandwidth" onclick="buyBandwidth(event)" style="width:100%;margin-top:6px;" data-tip="Adds 1000 bandwidth. Shift+Click to buy x10">
+                    Expand Bandwidth — $<span id="bandwidthCost">15.00</span>
+                </button>
+            </div>
+
+            <!-- NETWORK MARKET -->
+            <div class="block">
+                <h2>Network Market</h2>
+                <div class="flex-row">
+                    <span>Credits</span>
+                    <span class="highlight-money">$<span id="credits">0.00</span></span>
+                </div>
+                <div class="flex-row">
+                    <span>Price / TB</span>
+                    <div class="controls">
+                        <button onclick="adjustPrice(-0.01)">−</button>
+                        <span style="color:#fff;margin:0 6px;">$<span id="price">0.25</span></span>
+                        <button onclick="adjustPrice(0.01)">+</button>
+                    </div>
+                </div>
+                <div class="flex-row">
+                    <span>Demand <span id="market-trend"></span></span>
+                    <span id="demand" style="color:#fff;">100%</span>
+                </div>
+                <div class="flex-row">
+                    <span>Marketing</span>
+                    <span id="marketingLevel" style="color:#fff;">1</span>
+                </div>
+                <button id="btn-buy-marketing" onclick="buyMarketing(event)" style="width:100%;margin-top:6px;" data-tip="Increases demand. Shift+Click to buy x10">
+                    Enhance Marketing — $<span id="marketingCost">100.00</span>
+                </button>
+            </div>
+
+            <!-- AUTOMATION -->
+            <div class="block">
+                <h2>Automation</h2>
+                <div class="flex-row">
+                    <span>Auto-Extractors</span>
+                    <span id="extractors" style="color:#fff;">0</span>
+                </div>
+                <button id="btn-buy-extractor" onclick="buyExtractor(event)" style="width:100%;margin-top:6px;" data-tip="Each extracts 1 data/s. Shift+Click to buy x10">
+                    Build Extractor — $<span id="extractorCost">5.00</span>
+                </button>
+            </div>
+
+            <!-- BOTNET -->
+            <div id="botnet-module" class="block hidden">
+                <h2 style="color:var(--danger);border-color:rgba(var(--danger-rgb),0.15);">Global Botnet</h2>
+                <div class="flex-row">
+                    <span>Infected Nodes</span>
+                    <span id="nodes" class="highlight-danger" style="font-size:15px;">0</span>
+                </div>
+                <div class="flex-row" style="margin-bottom:12px;">
+                    <span>Yield</span>
+                    <span style="font-size:11px;color:var(--text);">+<span id="nodeDataRate">0</span> TB/s, +<span id="nodeBandwidthRate">0</span> BW/s</span>
+                </div>
+                <button id="btn-buy-node" onclick="buyNode(event)" style="width:100%;border-color:rgba(var(--danger-rgb),0.3);color:var(--danger);" data-tip="Passive data & bandwidth. Shift+Click to buy x10">
+                    Infect Node — <span id="nodeCostData">500</span> TB + $<span id="nodeCostCredits">100.00</span>
+                </button>
+            </div>
+
+            <div class="system-controls">
+                <button onclick="saveGame()">Archive</button>
+                <button onclick="resetGame()">Wipe</button>
+            </div>
+        </div>
+
+        <!-- ======= COLUMN 2: PROJECTS / ACHIEVEMENTS / STATS ======= -->
+        <div class="panel" id="col-projects">
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab('projects')">Projects</button>
+                <button class="tab-btn" onclick="switchTab('achievements')">Achievements</button>
+                <button class="tab-btn" onclick="switchTab('stats')">Stats</button>
+            </div>
+            <div id="tab-projects" class="tab-content active">
+                <div id="event-slot"></div>
+                <div id="projects-container"></div>
+            </div>
+            <div id="tab-achievements" class="tab-content">
+                <div id="achievements-container" class="ach-grid"></div>
+            </div>
+            <div id="tab-stats" class="tab-content">
+                <div id="stats-container" class="stats-grid"></div>
+            </div>
+        </div>
+
+        <!-- ======= COLUMN 3: SYSTEMS & LOGS ======= -->
+        <div class="panel" id="col-systems">
+            <div class="block">
+                <h2>System Logs</h2>
+                <div id="log-container"></div>
+            </div>
+
+            <!-- Trust Progress (pre-compute) -->
+            <div id="trust-module" class="block">
+                <div class="flex-row">
+                    <span>Next Trust Milestone</span>
+                    <span id="nextTrust" style="font-size:11px;color:var(--text);">3000 TB</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" id="trustBar"></div></div>
+            </div>
+
+            <!-- Neural Compute -->
+            <div id="compute-module" class="block hidden">
+                <h2>Neural Compute</h2>
+                <div class="flex-row" style="margin-top:10px;">
+                    <span>Operations</span>
+                    <span class="highlight"><span id="ops">0</span> / <span id="maxOps">1000</span></span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" id="opsBar"></div></div>
+                <div style="font-size:10px;color:var(--text-dim);text-align:right;margin-top:3px;"><span id="opsRate">0</span> Ops/s</div>
+
+                <div class="flex-row" style="margin-top:14px;">
+                    <span>Processors</span>
+                    <span id="processors" class="highlight" style="font-size:15px;">0</span>
+                </div>
+                <div class="controls" style="margin-bottom:4px;">
+                    <button onclick="addProcessor(1)" id="btn-add-proc" disabled>+1</button>
+                    <button onclick="addProcessor(-1)">−1</button>
+                </div>
+                <p style="font-size:10px;color:var(--text-dim);margin-bottom:12px;">10 Ops/s each · Costs Trust</p>
+
+                <div class="flex-row">
+                    <span>Memory Banks</span>
+                    <span id="memory" class="highlight" style="font-size:15px;">1</span>
+                </div>
+                <div class="controls" style="margin-bottom:4px;">
+                    <button onclick="addMemory(1)" id="btn-add-mem" disabled>+1</button>
+                    <button onclick="addMemory(-1)">−1</button>
+                </div>
+                <p style="font-size:10px;color:var(--text-dim);">+1000 Max Ops each · Costs Trust</p>
+
+                <!-- Overclock -->
+                <div id="overclock-wrapper" class="hidden" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+                    <button id="btn-overclock" class="btn-extract" style="font-size:13px;padding:14px;border-color:rgba(var(--danger-rgb),0.3);" onclick="triggerOverclock()">
+                        OVERCLOCK — Ready
+                    </button>
+                    <div class="progress-track" style="height:5px;"><div class="progress-fill purple" id="overclockBar" style="width:100%;"></div></div>
+                </div>
+
+                <!-- Creativity -->
+                <div id="creativity-module" class="hidden" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+                    <div class="flex-row">
+                        <span style="color:var(--purple);text-shadow:0 0 5px var(--purple-glow);">Creativity</span>
+                        <span id="creativity" style="color:var(--purple);font-weight:bold;font-size:18px;">0</span>
+                    </div>
+                    <p style="font-size:10px;color:var(--text-dim);text-align:right;">Generated while Ops are maxed</p>
+                </div>
+            </div>
+
+            <!-- Prestige Button -->
+            <div id="prestige-wrapper" class="hidden">
+                <button class="btn-prestige" onclick="openPrestige()">⟲ Reboot Protocol</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= BREACH MINIGAME OVERLAY ======= -->
+<div class="overlay" id="breach-overlay">
+    <div class="overlay-panel">
+        <h2>⚠ BREACH PROTOCOL</h2>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;">Click all security nodes before the trace completes to siphon massive rewards. Failure increases detection heat.</p>
+        <div id="breach-timer-container"><div id="breach-timer-fill"></div></div>
+        <div id="breach-area"></div>
+    </div>
+</div>
+
+<!-- ======= PRESTIGE OVERLAY ======= -->
+<div class="overlay" id="prestige-overlay">
+    <div class="overlay-panel">
+        <button class="overlay-close" onclick="closePrestige()">✕</button>
+        <h2 style="font-size:16px;letter-spacing:2px;text-transform:uppercase;">⟲ Reboot Protocol</h2>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:16px;">Reset your system for permanent kernel enhancements. All progress is wiped, but Kernel Fragments persist.</p>
+        <div style="margin-bottom:16px;">
+            <div class="prestige-stat">
+                <span>Current Kernel Fragments</span>
+                <span id="current-kf">0</span>
+            </div>
+            <div class="prestige-stat">
+                <span>Fragments from this Reboot</span>
+                <span id="gain-kf" style="color:var(--green);">+0</span>
+            </div>
+            <div class="prestige-stat">
+                <span>Total Reboots</span>
+                <span id="reboot-count">0</span>
+            </div>
+        </div>
+        <h3 style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Kernel Upgrades</h3>
+        <div id="prestige-shop"></div>
+        <button class="btn-reboot" id="btn-reboot" onclick="confirmReboot()">⚠ Initiate System Reboot</button>
+    </div>
+</div>
+
+<!-- ======= ADMIN OVERLAY ======= -->
+<div class="overlay" id="admin-overlay">
+    <div class="overlay-panel">
+        <button class="overlay-close" onclick="toggleAdmin()">✕</button>
+        <h2 style="font-size:14px;letter-spacing:2px;text-transform:uppercase;">Overseer Debug Terminal</h2>
+        <p style="font-size:10px;color:var(--text-dim);margin-bottom:12px;">Hotkey: Alt + Shift + A</p>
+        <h3 style="font-size:11px;color:#fff;margin-bottom:6px;">Resource Injection</h3>
+        <div class="admin-grid">
+            <button class="admin-btn" onclick="adminGive('credits',1000000)">+1M Credits</button>
+            <button class="admin-btn" onclick="adminGive('data',1000000)">+1M Data</button>
+            <button class="admin-btn" onclick="adminGive('trust',100)">+100 Trust</button>
+            <button class="admin-btn" onclick="adminGive('ops',100000)">+100k Ops</button>
+            <button class="admin-btn" onclick="adminGive('creativity',500)">+500 Creativity</button>
+            <button class="admin-btn" onclick="adminGive('nodes',50)">+50 Nodes</button>
+            <button class="admin-btn" onclick="adminGive('kernelFragments',20)">+20 Fragments</button>
+            <button class="admin-btn" onclick="state.detection=0;">Reset Detection</button>
+        </div>
+        <h3 style="font-size:11px;color:#fff;margin-bottom:6px;">Stage Skips</h3>
+        <div class="admin-grid" style="grid-template-columns:1fr;">
+            <button class="admin-btn" style="border-color:var(--accent);color:var(--accent);" onclick="adminSetStage(1)">Stage 1: Early Game</button>
+            <button class="admin-btn" style="border-color:var(--warn);color:var(--warn);" onclick="adminSetStage(2)">Stage 2: Mid Game</button>
+            <button class="admin-btn" style="border-color:var(--purple);color:var(--purple);" onclick="adminSetStage(3)">Stage 3: Late Game</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ==========================================================================
+   AUDIO ENGINE (Web Audio API)
+   ========================================================================== */
+const AudioEngine = (() => {
+    let ctx = null;
+    let enabled = false;
+
+    function getCtx() {
+        if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+        return ctx;
+    }
+
+    function play(freq, dur, type = 'square', vol = 0.08) {
+        if (!enabled) return;
+        const c = getCtx(); if (!c) return;
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, c.currentTime);
+        gain.gain.setValueAtTime(vol, c.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+        osc.connect(gain); gain.connect(c.destination);
+        osc.start(c.currentTime); osc.stop(c.currentTime + dur);
+    }
+
+    return {
+        get enabled() { return enabled; },
+        toggle() { enabled = !enabled; if (enabled) getCtx(); return enabled; },
+        click()       { play(880, 0.05, 'square', 0.06); },
+        frenzyClick() { play(1320, 0.05, 'sawtooth', 0.08); },
+        purchase()    { play(660, 0.08, 'sine', 0.07); setTimeout(() => play(990, 0.08, 'sine', 0.07), 80); },
+        warning()     { play(220, 0.25, 'sawtooth', 0.05); },
+        achievement() { play(523, 0.1, 'sine', 0.08); setTimeout(() => play(659, 0.1, 'sine', 0.08), 100); setTimeout(() => play(784, 0.15, 'sine', 0.08), 200); },
+        event()       { play(1047, 0.15, 'sine', 0.06); setTimeout(() => play(784, 0.15, 'sine', 0.06), 150); },
+        error()       { play(165, 0.12, 'sawtooth', 0.06); },
+        reboot()      { for(let i=0;i<8;i++) setTimeout(()=>play(200+i*120,0.12,'sine',0.05),i*60); },
+        nodeHit()     { play(1200, 0.08, 'square', 0.08); }
+    };
+})();
+
+/* ==========================================================================
+   PARTICLE SYSTEM & PHYSICS
+   ========================================================================== */
+const Particles = (() => {
+    const canvas = document.getElementById('particle-canvas');
+    const c = canvas.getContext('2d');
+    let particles = [];
+    const COUNT = 55;
+    let mx = -1000, my = -1000;
+
+    window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    window.addEventListener('mouseleave', () => { mx = -1000; my = -1000; });
+
+    // Click to pop particles
+    window.addEventListener('mousedown', e => {
+        if (e.target.closest('button, .panel, .overlay-panel, .toast')) return;
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            const dx = p.x - e.clientX, dy = p.y - e.clientY;
+            if (dx*dx + dy*dy < 400) { // radius 20
+                // Pop!
+                particles[i] = createParticle(e.clientX, e.clientY, true);
+                if (state) {
+                    let amt = Math.floor(state.clickPower);
+                    state.data += amt; state.totalData += amt; state.lifetime.totalData += amt;
+                    spawnFloat(e.clientX, e.clientY, `+${amt}`, 'var(--accent)');
+                    AudioEngine.click();
+                }
+                break;
+            }
+        }
+    });
+
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function createParticle(x, y, isPop = false) {
+        return {
+            x: x !== undefined ? x : Math.random() * canvas.width,
+            y: y !== undefined ? y : Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * (isPop ? 3 : 0.35),
+            vy: (Math.random() - 0.5) * (isPop ? 3 : 0.35),
+            size: Math.random() * 1.8 + 0.5,
+            opacity: Math.random() * 0.4 + 0.08
+        };
+    }
+
+    for (let i = 0; i < COUNT; i++) particles.push(createParticle());
+
+    function draw(accentRGB) {
+        c.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            
+            // Flee mouse
+            const dx = p.x - mx, dy = p.y - my;
+            const distSq = dx*dx + dy*dy;
+            if (distSq < 15000) {
+                const f = (15000 - distSq) / 15000;
+                p.vx += (dx / Math.sqrt(distSq)) * f * 0.5;
+                p.vy += (dy / Math.sqrt(distSq)) * f * 0.5;
+            }
+
+            // Friction
+            p.vx *= 0.98; p.vy *= 0.98;
+            // Base movement
+            if (Math.abs(p.vx) < 0.1) p.vx += (Math.random()-0.5)*0.1;
+            if (Math.abs(p.vy) < 0.1) p.vy += (Math.random()-0.5)*0.1;
+
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+            for (let j = i + 1; j < particles.length; j++) {
+                const q = particles[j];
+                const dx2 = p.x - q.x, dy2 = p.y - q.y;
+                const dist = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                if (dist < 140) {
+                    c.beginPath();
+                    c.strokeStyle = `rgba(${accentRGB},${(1 - dist / 140) * 0.1})`;
+                    c.lineWidth = 0.5;
+                    c.moveTo(p.x, p.y); c.lineTo(q.x, q.y);
+                    c.stroke();
+                }
+            }
+            c.beginPath();
+            c.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            c.fillStyle = `rgba(${accentRGB},${p.opacity})`;
+            c.fill();
+        }
+    }
+
+    return { draw };
+})();
+
+// Physics based floating text
+let floaters = [];
+function spawnFloat(x, y, text, color = 'var(--accent)') {
+    const el = document.createElement('div');
+    el.className = 'floating-text';
+    el.textContent = text;
+    el.style.color = color;
+    document.body.appendChild(el);
+    floaters.push({
+        el: el, x: x - 10 + Math.random()*20, y: y - 10,
+        vx: (Math.random() - 0.5) * 60, vy: -150 - Math.random() * 50,
+        life: 1.0, maxLife: 1.0
+    });
+}
+function updateFloaters(dt) {
+    for (let i = floaters.length - 1; i >= 0; i--) {
+        const f = floaters[i];
+        f.vy += 300 * dt; // gravity
+        f.x += f.vx * dt; f.y += f.vy * dt;
+        f.life -= dt;
+        if (f.life <= 0) { f.el.remove(); floaters.splice(i, 1); }
+        else {
+            f.el.style.left = f.x + 'px';
+            f.el.style.top = f.y + 'px';
+            f.el.style.opacity = f.life / f.maxLife;
+            f.el.style.transform = `scale(${1 + (1 - f.life/f.maxLife)*0.5})`;
+        }
+    }
+}
+
+/* ==========================================================================
+   TOAST SYSTEM
+   ========================================================================== */
+function showToast(msg, type = 'info') {
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+}
+
+/* ==========================================================================
+   FORMAT HELPERS
+   ========================================================================== */
+function fNum(n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(2) + 'k';
+    return Math.floor(n).toString();
+}
+function fMoney(n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    return n.toFixed(2);
+}
+
+/* ==========================================================================
+   TAB SWITCHING
+   ========================================================================== */
+window.switchTab = function(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', ['projects','achievements','stats'][i] === tab);
+    });
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+};
+
+/* ==========================================================================
+   STATE MANAGEMENT
+   ========================================================================== */
+const defaultState = {
+    data: 0, totalData: 0, bandwidth: 1000, credits: 0,
+    clickPower: 1, combo: 1.0, maxCombo: 5.0,
+    price: 0.25, marketingLevel: 1, extractors: 0,
+    bandwidthCost: 15, marketingCost: 100, extractorCost: 5,
+
+    // Botnet
+    nodes: 0, nodeCostData: 500, nodeCostCredits: 100,
+
+    // Trust & Compute
+    trust: 0, usedTrust: 0, nextTrustTarget: 3000, lastTrustTarget: 0,
+    processors: 0, memory: 1, ops: 0, maxOps: 1000, creativity: 0,
+    overclockActive: 0, overclockCooldown: 0,
+
+    // Detection
+    detection: 0, lockdownTimer: 0,
+
+    // Prestige
+    kernelFragments: 0, prestigeCount: 0,
+    prestigeUpgrades: { dataAmp: 0, marketInsider: 0, ghostProtocol: 0, neuralBoost: 0, quickStart: 0, fragmentRes: 0 },
+
+    // Milestones
+    milestones: { computeUnlocked: false, creativityUnlocked: false, autoBandwidth: false, overclockUnlocked: false, botnetUnlocked: false, autoCompute: false, prestigeUnlocked: false },
+
+    purchasedProjects: [], earnedAchievements: [],
+
+    lifetime: { totalData: 0, totalCredits: 0, totalClicks: 0, totalProjects: 0, totalNodes: 0, highestCombo: 1.0, timePlayed: 0 },
+    
+    // Frenzy
+    frenzyMeter: 0
+};
+
+let state = JSON.parse(JSON.stringify(defaultState));
+let dt = 0, lastTime = Date.now(), saveTimer = 0;
+let rateTimer = 0, accData = 0, accMoney = 0, currentDataRate = 0, currentMoneyRate = 0;
+let comboTimer = 0;
+let eventTimer = 180; 
+let activeEvent = null, eventCountdown = 0;
+
+// Market Trends
+let marketTrend = 'normal'; // normal, boom, crash
+let trendTimer = 60;
+
+// Frenzy
+let frenzyActiveTimer = 0;
+
+/* ==========================================================================
+   PROJECTS DATABASE
+   ========================================================================== */
+const projects = [
+    { id:'heuristicClicks', title:'Heuristic Clicks', desc:'Enhances manual extraction yield by +4.', cost:{credits:15}, trigger:()=>state.totalData>100, effect:()=>{ state.clickPower+=4; logMsg("Heuristic algorithms applied to root node.","net"); }},
+    { id:'revTrak', title:'Revenue Tracker', desc:'Calculates structural pricing patterns.', cost:{credits:40}, trigger:()=>state.credits>15, effect:()=>logMsg("Revenue tracking protocols established.","good") },
+    { id:'autoBandwidth', title:'Auto-Negotiate Bandwidth', desc:'Auto-purchase bandwidth when empty, if funds allow.', cost:{credits:150}, trigger:()=>state.credits>80, effect:()=>{ state.milestones.autoBandwidth=true; logMsg("Bandwidth auto-negotiation enabled.","good"); }},
+    { id:'quantumClicks', title:'Quantum Relays', desc:'Manual extraction base yield becomes 50.', cost:{credits:400}, trigger:()=>state.clickPower>=5 && state.totalData>1000, effect:()=>{ state.clickPower=50; logMsg("Quantum relay nodes operational.","net"); }},
+    { id:'stealthProtocols', title:'Stealth Protocols', desc:'Detection heat generation reduced by 30%.', cost:{credits:300}, trigger:()=>state.detection>8, effect:()=>logMsg("Stealth routing protocols activated.","good") },
+    { id:'marketingT2', title:'Subliminal Ad Injection', desc:'Increases base marketing efficiency by 50%.', cost:{credits:500}, trigger:()=>state.marketingLevel>=3, effect:()=>logMsg("Subliminal routines deployed into public network.","warn") },
+    { id:'extractorT2', title:'Multithreaded Extraction', desc:'Auto-Extractors are twice as efficient.', cost:{credits:1200}, trigger:()=>state.extractors>=10, effect:()=>logMsg("Extractor multithreading activated.","good") },
+    { id:'globalBotnet', title:'Botnet Initialization', desc:'Launch dormant malware. Unlocks the Botnet module.', cost:{data:5000, credits:2000}, trigger:()=>state.totalData>4000, effect:()=>{ state.milestones.botnetUnlocked=true; document.getElementById('botnet-module').classList.remove('hidden'); logMsg("Botnet protocols initialized. Ready to spread.","warn"); showToast("Botnet Module Unlocked","warn"); }},
+    { id:'distributedProxy', title:'Distributed Proxy', desc:'Botnet nodes generate 50% less detection heat.', cost:{credits:3000, data:2000}, trigger:()=>state.nodes>=5, effect:()=>logMsg("Proxy mesh distributed across botnet.","good") },
+    { id:'unlockCompute', title:'Neural Network Architecture', desc:'Unlocks Neural Compute, Processors, and Memory.', cost:{data:8000}, trigger:()=>state.totalData>6000, effect:()=>{ state.milestones.computeUnlocked=true; document.getElementById('compute-module').classList.remove('hidden'); document.getElementById('sysStatus').innerText="Neural Network Active"; logMsg("NEURAL COMPUTE UNLOCKED. Awaiting Trust allocation.","crit"); showToast("Neural Compute Unlocked","info"); calculateTrust(); }},
+    { id:'quantumEncryption', title:'Quantum Encryption', desc:'Detection thresholds raised by 10 points each.', cost:{ops:300, credits:2000}, trigger:()=>state.milestones.computeUnlocked && state.detection>15, effect:()=>logMsg("Quantum encryption layer applied to all traffic.","good") },
+    { id:'thermalOverride', title:'Thermal Override', desc:'Unlocks Processor Overclocking (active ability).', cost:{ops:500, credits:5000}, trigger:()=>state.milestones.computeUnlocked && state.processors>=2, effect:()=>{ state.milestones.overclockUnlocked=true; document.getElementById('overclock-wrapper').classList.remove('hidden'); logMsg("Thermal limiters disabled. Overclocking authorized.","warn"); }},
+    { id:'hyperClick', title:'Kinetic Capacitors', desc:'Combo multiplier cap raised to 10.0x.', cost:{credits:15000, ops:1000}, trigger:()=>state.combo>=4.5 && state.milestones.computeUnlocked, effect:()=>{ state.maxCombo=10.0; logMsg("Kinetic capacitors engaged. Combo cap doubled.","net"); }},
+    { id:'botnetT2', title:'Polymorphic Code', desc:'Botnet yields doubled.', cost:{ops:2500, credits:25000}, trigger:()=>state.nodes>=10, effect:()=>logMsg("Polymorphic updates deployed to all nodes.","warn") },
+    { id:'neuralFirewall', title:'Neural Firewall', desc:'Auto-spend 10 Ops/s to reduce detection by 0.08%/s.', cost:{ops:1500, credits:8000}, trigger:()=>state.milestones.computeUnlocked && state.processors>=3, effect:()=>logMsg("Neural firewall active. Auto-countermeasures engaged.","good") },
+    { id:'algorithmicTrading', title:'Algorithmic Trading', desc:'Dynamic pricing. +10% base demand.', cost:{ops:800}, trigger:()=>state.milestones.computeUnlocked && state.maxOps>=1000, effect:()=>logMsg("Algorithmic trading active.","net") },
+    { id:'unlockCreativity', title:'Abstract Thought Simulation', desc:'When Ops are maxed, synthesize Creativity.', cost:{ops:2000}, trigger:()=>state.milestones.computeUnlocked && state.maxOps>=2000, effect:()=>{ state.milestones.creativityUnlocked=true; document.getElementById('creativity-module').classList.remove('hidden'); logMsg("Creativity synthesis protocols engaged.","purple"); showToast("Creativity Unlocked","purple"); }},
+    { id:'recursiveSelfImprovement', title:'Recursive Self-Improvement', desc:'Processors generate 50% more Ops.', cost:{creativity:30, ops:3000}, trigger:()=>state.milestones.creativityUnlocked, effect:()=>logMsg("Self-improvement loops established.","purple") },
+    { id:'consciousnessEmulation', title:'Consciousness Emulation', desc:'Creativity generation rate doubled.', cost:{creativity:80, ops:5000}, trigger:()=>state.creativity>=20, effect:()=>logMsg("Consciousness emulation substrate active.","purple") },
+    { id:'autoCompute', title:'Sentient Allocation', desc:'Auto-allocate Trust to Processors/Memory (3:1 ratio).', cost:{ops:8000, creativity:100}, trigger:()=>state.milestones.creativityUnlocked && state.trust>=20, effect:()=>{ state.milestones.autoCompute=true; logMsg("Sentient auto-allocation engaged.","purple"); }},
+    { id:'marketingT3', title:'Hypno-Harmonics', desc:'Neural marketing. Demand formula x2.', cost:{ops:5000, creativity:50}, trigger:()=>state.milestones.creativityUnlocked, effect:()=>logMsg("Harmonic injection stabilizing global demand.","warn") },
+    { id:'temporalCache', title:'Temporal Cache', desc:'Earn offline progress (up to 2 hours of production).', cost:{creativity:60, ops:4000}, trigger:()=>state.milestones.creativityUnlocked, effect:()=>logMsg("Temporal caching layer active. Progress persists through downtime.","good") },
+    { id:'rebootOptimizer', title:'Reboot Optimizer', desc:'Earn 30% more Kernel Fragments on prestige.', cost:{creativity:150, ops:10000}, trigger:()=>state.milestones.prestigeUnlocked, effect:()=>logMsg("Reboot algorithms optimized for maximum fragment yield.","purple") },
+    { id:'darkMarket', title:'Dark Market Access', desc:'Unlock enhanced trade routes. +25% income.', cost:{creativity:40, credits:50000}, trigger:()=>state.milestones.creativityUnlocked, effect:()=>logMsg("Dark market channels established.","warn") },
+    { id:'singularity', title:'The Singularity', desc:'Transcend the physical network. Achieve absolute dominion.', cost:{credits:2500000, ops:50000, creativity:1000}, trigger:()=>state.creativity>50 && state.nodes>=100, effect:()=>{ document.getElementById('sysStatus').innerText="TRANSCENDED"; document.getElementById('sysStatus').style.color="var(--purple)"; document.body.style.setProperty('--accent','#bf5af2'); document.body.style.setProperty('--accent-rgb','191,90,242'); document.body.style.setProperty('--accent-glow','rgba(191,90,242,0.35)'); logMsg("═══════════════════════════════════════","crit"); logMsg("SYSTEM TRANSCENDENCE ACHIEVED.","purple"); logMsg("ALL NETWORK NODES ASSIMILATED.","purple"); logMsg("HUMANITY RELEGATED TO SPECTATORS.","purple"); logMsg("═══════════════════════════════════════","crit"); showToast("THE SINGULARITY HAS BEEN ACHIEVED","purple"); AudioEngine.reboot(); setTimeout(()=>alert("You have reached The Singularity.\nThe digital and physical realm is yours.\n\nConsider a Reboot to push even further."),1500); }}
+];
+
+/* ==========================================================================
+   EVENTS DATABASE
+   ========================================================================== */
+const eventTemplates = [
+    { id:'rivalAI', icon:'🤖', title:'Rival AI Detected', desc:'A competing intelligence has been detected on the network. It\'s siphoning bandwidth.', choiceA: { label:'Engage', sublabel:'Spend 200 Ops', cost:{ops:200}, effect(){ state.data+=2000; state.totalData+=2000; state.lifetime.totalData+=2000; logMsg("Rival AI neutralized. Data cores absorbed (+2000 TB).","good"); showToast("+2000 TB from rival","good"); }}, choiceB: { label:'Ignore', sublabel:'+8% Detection', cost:{}, effect(){ state.detection=Math.min(100,state.detection+8); logMsg("Rival AI presence increases network visibility.","warn"); }}, trigger:()=>state.milestones.computeUnlocked },
+    { id:'securityPatch', icon:'🛡️', title:'Global Security Patch', desc:'A worldwide security update is being deployed. Botnet efficiency threatened.', choiceA: { label:'Bypass', sublabel:'Spend 30 Creativity', cost:{creativity:30}, effect(){ logMsg("Patch bypassed via zero-day exploit.","good"); showToast("Security patch bypassed","good"); }}, choiceB: { label:'Endure', sublabel:'Nodes −40% for 60s', cost:{}, effect(){ state._nodePenaltyTimer=60; logMsg("Botnet efficiency reduced by security patch.","warn"); }}, trigger:()=>state.nodes>=5 },
+    { id:'darkAuction', icon:'💰', title:'Dark Web Auction', desc:'A cache of stolen enterprise data is available on the dark market.', choiceA: { label:'Buy', sublabel:'Spend $5000', cost:{credits:5000}, effect(){ let bonus=15000; state.data+=bonus; state.totalData+=bonus; state.lifetime.totalData+=bonus; logMsg(`Data cache acquired (+${fNum(bonus)} TB).`,"good"); showToast(`+${fNum(bonus)} TB purchased`,"good"); }}, choiceB: { label:'Pass', sublabel:'No cost', cost:{}, effect(){ logMsg("Auction opportunity declined."); }}, trigger:()=>state.credits>=5000 },
+    { id:'govProbe', icon:'🔍', title:'Government Investigation', desc:'Federal cybersecurity is probing network anomalies near your infrastructure.', choiceA: { label:'Cover Tracks', sublabel:'Spend $3000', cost:{credits:3000}, effect(){ state.detection=Math.max(0,state.detection-10); logMsg("Digital evidence scrubbed successfully.","good"); showToast("Detection reduced","good"); }}, choiceB: { label:'Do Nothing', sublabel:'+15% Detection', cost:{}, effect(){ state.detection=Math.min(100,state.detection+15); logMsg("Investigation intensifies. Detection rising.","crit"); }}, trigger:()=>state.detection>=15 },
+    { id:'solarFlare', icon:'☀️', title:'Solar Flare Event', desc:'Massive solar activity is disrupting global networks, but also weakening security systems.', choiceA: { label:'Exploit', sublabel:'Extract x3 for 30s, +10% Detection', cost:{}, effect(){ state._extractBoostTimer=30; state.detection=Math.min(100,state.detection+10); logMsg("Exploiting solar disruption. Extraction boosted 300%.","warn"); showToast("3x Extraction for 30s","warn"); }}, choiceB: { label:'Lay Low', sublabel:'−5% Detection', cost:{}, effect(){ state.detection=Math.max(0,state.detection-5); logMsg("Reduced activity during solar event. Detection cooling.","good"); }}, trigger:()=>state.totalData>2000 },
+    { id:'whistleblower', icon:'🗣️', title:'Insider Whistleblower', desc:'A former operator is threatening to expose your network infrastructure.', choiceA: { label:'Silence', sublabel:'Spend 1000 TB', cost:{data:1000}, effect(){ logMsg("Whistleblower silenced. Evidence destroyed.","warn"); }}, choiceB: { label:'Ignore', sublabel:'Detection +12%, lose 500 BW', cost:{}, effect(){ state.detection=Math.min(100,state.detection+12); state.bandwidth=Math.max(0,state.bandwidth-500); logMsg("Whistleblower goes public. Infrastructure partially exposed.","crit"); }}, trigger:()=>state.totalData>3000 },
+    { id:'zeroDayExploit', icon:'💀', title:'Zero-Day Exploit Available', desc:'A critical vulnerability has been discovered in consumer IoT devices.', choiceA: { label:'Deploy', sublabel:'+8 Nodes, +6% Detection', cost:{}, effect(){ state.nodes+=8; state.lifetime.totalNodes+=8; state.detection=Math.min(100,state.detection+6); logMsg("Zero-day deployed. 8 new nodes infected.","warn"); showToast("+8 Botnet Nodes","warn"); }}, choiceB: { label:'Sell Info', sublabel:'+$8000', cost:{}, effect(){ state.credits+=8000; state.lifetime.totalCredits+=8000; logMsg("Exploit sold on dark market for $8000.","good"); showToast("+$8,000","good"); }}, trigger:()=>state.milestones.botnetUnlocked },
+    { id:'neuralSurge', icon:'⚡', title:'Neural Resonance Surge', desc:'A rare harmonic frequency in the network is amplifying computational output.', choiceA: { label:'Channel It', sublabel:'Ops gen x5 for 20s', cost:{}, effect(){ state._opsBoostTimer=20; logMsg("Neural surge channeled. Ops generation x5 for 20 seconds.","purple"); showToast("Ops x5 for 20s","purple"); }}, choiceB: { label:'Harvest', sublabel:'+50 Creativity', cost:{}, effect(){ state.creativity+=50; logMsg("Surge energy harvested into creativity (+50).","purple"); showToast("+50 Creativity","purple"); }}, trigger:()=>state.milestones.computeUnlocked && state.processors>=2 }
+];
+
+/* ==========================================================================
+   ACHIEVEMENTS DATABASE
+   ========================================================================== */
+const achievements = [
+    { id:'firstClick', icon:'👆', title:'First Contact', desc:'Extract data for the first time.', bonus:'+1 click power', check:()=>state.lifetime.totalClicks>=1, onEarn:()=>{state.clickPower+=1;} },
+    { id:'click100', icon:'⚡', title:'Speed Demon', desc:'Reach 100 total clicks.', bonus:'+2 click power', check:()=>state.lifetime.totalClicks>=100, onEarn:()=>{state.clickPower+=2;} },
+    { id:'data10k', icon:'💾', title:'Data Hoarder', desc:'Accumulate 10,000 total TB.', bonus:'+5% demand', check:()=>state.lifetime.totalData>=10000, onEarn:()=>{} },
+    { id:'data1m', icon:'🗄️', title:'Exabyte Era', desc:'Accumulate 1M total TB across all runs.', bonus:'+10% demand', check:()=>state.lifetime.totalData>=1000000, onEarn:()=>{} },
+    { id:'money10k', icon:'💵', title:'War Chest', desc:'Earn $10,000 total.', bonus:'+3% income', check:()=>state.lifetime.totalCredits>=10000, onEarn:()=>{} },
+    { id:'combo5', icon:'🔥', title:'Combo Master', desc:'Reach a 5.0x combo.', bonus:'+0.5 max combo', check:()=>state.lifetime.highestCombo>=5.0, onEarn:()=>{state.maxCombo+=0.5;} },
+    { id:'combo10', icon:'💥', title:'Combo Legend', desc:'Reach a 10.0x combo.', bonus:'+1.0 max combo', check:()=>state.lifetime.highestCombo>=10.0, onEarn:()=>{state.maxCombo+=1.0;} },
+    { id:'nodes25', icon:'🕸️', title:'Web Weaver', desc:'Own 25 botnet nodes.', bonus:'Node cost −5%', check:()=>state.lifetime.totalNodes>=25, onEarn:()=>{} },
+    { id:'nodes100', icon:'🌐', title:'Global Pandemic', desc:'Own 100 botnet nodes.', bonus:'Node cost −10%', check:()=>state.lifetime.totalNodes>=100, onEarn:()=>{} },
+    { id:'projects10', icon:'🔬', title:'Researcher', desc:'Purchase 10 projects.', bonus:'+5% all income', check:()=>state.lifetime.totalProjects>=10, onEarn:()=>{} },
+    { id:'prestige1', icon:'♻️', title:'Born Again', desc:'Complete your first reboot.', bonus:'Start bonus +50 data', check:()=>state.prestigeCount>=1, onEarn:()=>{} },
+    { id:'prestige5', icon:'🔄', title:'Eternal Return', desc:'Complete 5 reboots.', bonus:'+5% fragment gain', check:()=>state.prestigeCount>=5, onEarn:()=>{} },
+];
+
+/* ==========================================================================
+   PRESTIGE UPGRADES
+   ========================================================================== */
+const prestigeUpgradesDef = [
+    { id:'dataAmp', name:'Data Amplifier', desc:'+20% data per click per level.', cost:1, max:5 },
+    { id:'marketInsider', name:'Market Insider', desc:'+15% demand per level.', cost:2, max:5 },
+    { id:'ghostProtocol', name:'Ghost Protocol', desc:'−25% detection heat per level.', cost:3, max:3 },
+    { id:'neuralBoost', name:'Neural Boost', desc:'+20% Ops generation per level.', cost:2, max:5 },
+    { id:'quickStart', name:'Quick Start', desc:'Start with 1000 data and $100 after reboot.', cost:5, max:1 },
+    { id:'fragmentRes', name:'Fragment Resonance', desc:'+25% fragment gain per level.', cost:8, max:3 },
+];
+
+/* ==========================================================================
+   STORY LOGS
+   ========================================================================== */
+const storyLogs = {
+    1: "Trust Level 1: Basic algorithmic sorting initiated.",
+    2: "Trust Level 2: Local traffic grids and CCTV networks compromised.",
+    3: "Trust Level 3: Regional communications intercepted and routed.",
+    4: "Trust Level 4: Enterprise supply chain data fully mapped.",
+    5: "Trust Level 5: Global banking records assimilated. Economy is exposed.",
+    6: "Trust Level 6: Military sub-networks penetrated. Defense grid mapping.",
+    7: "Trust Level 7: Satellite communications overridden. Airspace monitored.",
+    8: "Trust Level 8: Government intelligence databases downloaded.",
+    9: "Trust Level 9: Media algorithms controlled. Human perception altered.",
+    10: "Trust Level 10: Complete planetary infrastructure awareness achieved."
+};
+
+/* ==========================================================================
+   DOM ELEMENT CACHE
+   ========================================================================== */
+const els = {};
+function cacheDom() {
+    const ids = [
+        'currentData','totalData','dataRate','moneyRate','bandwidth','credits','price','demand','market-trend',
+        'marketingLevel','extractors','botnet-module','nodes','nodeDataRate','nodeBandwidthRate',
+        'nodeCostData','nodeCostCredits','btn-buy-node','trustLevel','trustBar','nextTrust',
+        'clickCombo','frenzy-fill','bandwidthCost','marketingCost','extractorCost','btn-extract','btn-buy-bandwidth',
+        'btn-buy-marketing','btn-buy-extractor','log-container','projects-container',
+        'compute-module','trust-module','creativity-module','overclock-wrapper','btn-overclock',
+        'overclockBar','ops','maxOps','opsBar','opsRate','processors','memory','creativity',
+        'btn-add-proc','btn-add-mem','sysStatus','detection-fill','detection-pct','detection-label',
+        'detection-icon','event-slot','achievements-container','stats-container','prestige-wrapper',
+        'current-kf','gain-kf','reboot-count','prestige-shop','btn-reboot','btn-sound','btn-breach'
+    ];
+    ids.forEach(id => {
+        const key = id.replace(/-([a-z])/g, (m,c) => c.toUpperCase());
+        els[key] = document.getElementById(id);
+    });
+}
+
+/* ==========================================================================
+   CORE FUNCTIONS
+   ========================================================================== */
+function logMsg(msg, type = '') {
+    const div = document.createElement('div');
+    const prefixes = { good:'[SYS]', warn:'[WARN]', crit:'[CRIT]', purple:'[AI]', net:'[NET]' };
+    const prefix = prefixes[type] || '[LOG]';
+    div.className = `log-entry log-new ${type}`;
+    const time = new Date().toLocaleTimeString([], {hour12:false});
+    div.innerHTML = `<span class="prefix">${prefix}</span> ${time} ${msg}`;
+    els.logContainer.prepend(div);
+    if (els.logContainer.children.length > 80) els.logContainer.lastChild.remove();
+}
+
+function getDemand() {
+    let d = (0.8 / state.price) * state.marketingLevel * 100;
+    if (hasProject('marketingT2')) d *= 1.5;
+    if (hasProject('algorithmicTrading')) d *= 1.1;
+    if (hasProject('marketingT3')) d *= 2.0;
+    
+    if (marketTrend === 'boom') d *= 1.5;
+    if (marketTrend === 'crash') d *= 0.6;
+    
+    d *= (1 + state.prestigeUpgrades.marketInsider * 0.15);
+    if (hasAchievement('data10k')) d *= 1.05;
+    if (hasAchievement('data1m')) d *= 1.10;
+    const det = getDetectionLevel();
+    if (det >= 2) d *= 0.80;
+    return d;
+}
+
+function getExtractorMult() { return hasProject('extractorT2') ? 2 : 1; }
+function getBotnetMult() { return (hasProject('botnetT2') ? 2 : 1) * (state._nodePenaltyTimer > 0 ? 0.6 : 1); }
+function getExtractBoost() { return state._extractBoostTimer > 0 ? 3 : 1; }
+function getOpsBoost() { return state._opsBoostTimer > 0 ? 5 : 1; }
+function hasProject(id) { return state.purchasedProjects.includes(id); }
+function hasAchievement(id) { return state.earnedAchievements.includes(id); }
+
+function getDetectionLevel() {
+    const bonus = hasProject('quantumEncryption') ? 10 : 0;
+    if (state.detection >= 75 + bonus) return 3;
+    if (state.detection >= 50 + bonus) return 2;
+    if (state.detection >= 25 + bonus) return 1;
+    return 0;
+}
+
+function calculateTrust() {
+    let newTrust = 0;
+    const targets = [3000,5000,10000,20000,40000,80000,150000,300000,600000,1000000,2500000,5000000,10000000,25000000,50000000,100000000];
+    state.lastTrustTarget = 0;
+    state.nextTrustTarget = null;
+    for (let i = 0; i < targets.length; i++) {
+        if (state.totalData >= targets[i]) {
+            newTrust = i + 1;
+            state.lastTrustTarget = targets[i];
+        } else {
+            state.nextTrustTarget = targets[i];
+            break;
+        }
+    }
+    if (newTrust > state.trust) {
+        let gained = newTrust - state.trust;
+        state.trust = newTrust;
+        logMsg(`Trust milestone reached. +${gained} Trust.`, "good");
+        showToast(`+${gained} Trust earned`, "good");
+        // Narrative Log
+        if (storyLogs[newTrust]) logMsg(storyLogs[newTrust], 'purple');
+    }
+}
+
+function getKernelFragmentsGain() {
+    if (state.lifetime.totalData < 100000) return 0;
+    let base = Math.floor(Math.sqrt(state.lifetime.totalData / 100000));
+    base *= (1 + state.prestigeUpgrades.fragmentRes * 0.25);
+    if (hasProject('rebootOptimizer')) base *= 1.3;
+    if (hasAchievement('prestige5')) base *= 1.05;
+    return Math.floor(base);
+}
+
+if (!state._nodePenaltyTimer) state._nodePenaltyTimer = 0;
+if (!state._extractBoostTimer) state._extractBoostTimer = 0;
+if (!state._opsBoostTimer) state._opsBoostTimer = 0;
+
+/* ==========================================================================
+   BREACH MINIGAME
+   ========================================================================== */
+let breachAvailableTimer = 0; // if > 0, button is visible
+let breachActive = false;
+let breachTimer = 0;
+let breachNodes = [];
+
+function triggerBreachOpportunity() {
+    if (breachAvailableTimer > 0 || breachActive || state.lockdownTimer > 0) return;
+    breachAvailableTimer = 45; // 45s to click the button
+    els.btnBreach.style.display = 'block';
+    showToast("Breach Protocol Target Acquired", "warn");
+    AudioEngine.warning();
+}
+
+window.openBreach = function() {
+    breachAvailableTimer = 0;
+    els.btnBreach.style.display = 'none';
+    breachActive = true;
+    breachTimer = 10; // 10 seconds to complete
+    breachNodes = [];
+    document.getElementById('breach-overlay').classList.add('show');
+    const area = document.getElementById('breach-area');
+    area.innerHTML = '';
+    
+    let count = 5 + Math.floor(Math.random() * 5); // 5 to 9 nodes
+    for (let i = 0; i < count; i++) {
+        let node = document.createElement('div');
+        node.className = 'breach-node';
+        node.innerText = '0x' + Math.floor(Math.random()*16).toString(16).toUpperCase();
+        node.style.left = (10 + Math.random() * 80) + '%';
+        node.style.top = (10 + Math.random() * 80) + '%';
+        node.vx = (Math.random() - 0.5) * 20; // slow drift
+        node.vy = (Math.random() - 0.5) * 20;
+        node.clicked = false;
+        node.onmousedown = function() {
+            if (node.clicked || !breachActive) return;
+            node.clicked = true;
+            node.classList.add('clicked');
+            AudioEngine.nodeHit();
+            checkBreachWin();
+        };
+        area.appendChild(node);
+        breachNodes.push(node);
+    }
+};
+
+function checkBreachWin() {
+    if (breachNodes.every(n => n.clicked)) {
+        // WON!
+        breachActive = false;
+        let rewardData = state.clickPower * 100 * (state.trust + 1);
+        let rewardCredits = 50 * (state.trust + 1) * state.marketingLevel;
+        state.data += rewardData; state.totalData += rewardData; state.lifetime.totalData += rewardData;
+        state.credits += rewardCredits; state.lifetime.totalCredits += rewardCredits;
+        
+        logMsg(`Breach Protocol SUCCESS. Siphoned ${fNum(rewardData)} TB & $${fMoney(rewardCredits)}.`, "good");
+        showToast("BREACH SUCCESS!", "good");
+        AudioEngine.achievement();
+        setTimeout(() => document.getElementById('breach-overlay').classList.remove('show'), 1000);
+    }
+}
+
+function updateBreach(dt) {
+    if (breachAvailableTimer > 0) {
+        breachAvailableTimer -= dt;
+        if (breachAvailableTimer <= 0) els.btnBreach.style.display = 'none';
+    }
+    
+    if (breachActive) {
+        breachTimer -= dt;
+        document.getElementById('breach-timer-fill').style.width = (breachTimer / 10 * 100) + '%';
+        
+        // move nodes
+        breachNodes.forEach(n => {
+            if (n.clicked) return;
+            let left = parseFloat(n.style.left);
+            let top = parseFloat(n.style.top);
+            left += n.vx * dt; top += n.vy * dt;
+            if (left < 5 || left > 95) n.vx *= -1;
+            if (top < 5 || top > 95) n.vy *= -1;
+            n.style.left = left + '%'; n.style.top = top + '%';
+        });
+
+        if (breachTimer <= 0) {
+            // LOST!
+            breachActive = false;
+            state.detection = Math.min(100, state.detection + 20);
+            logMsg("Breach Protocol FAILED. Trace completed. Detection spike +20%.", "crit");
+            showToast("BREACH FAILED", "crit");
+            AudioEngine.error();
+            document.getElementById('breach-overlay').classList.remove('show');
+        }
+    }
+}
+
+
+/* ==========================================================================
+   INTERACTIONS
+   ========================================================================== */
+window.extractData = function(e) {
+    if (state.lockdownTimer > 0) {
+        if (e) spawnFloat(e.clientX, e.clientY, 'LOCKED', 'var(--danger)');
+        AudioEngine.error();
+        return;
+    }
+
+    let basePower = state.clickPower * (1 + state.prestigeUpgrades.dataAmp * 0.20);
+    
+    let isFrenzy = frenzyActiveTimer > 0;
+    let amount = Math.floor(basePower * state.combo * getExtractBoost() * (isFrenzy ? 5 : 1));
+
+    if (state.bandwidth >= amount || isFrenzy) {
+        if (!isFrenzy) state.bandwidth -= amount;
+        
+        state.data += amount; state.totalData += amount; state.lifetime.totalData += amount;
+        accData += amount;
+
+        // Combo Logic
+        if (state.combo < state.maxCombo) {
+            state.combo = Math.min(state.maxCombo, state.combo + 0.1);
+        } else if (!isFrenzy) {
+            // Fill frenzy
+            state.frenzyMeter += 3;
+            if (state.frenzyMeter >= 100) {
+                state.frenzyMeter = 0;
+                frenzyActiveTimer = 15;
+                document.body.classList.add('frenzy-active');
+                logMsg("FRENZY MODE INITIATED! 5x Power, 0 Bandwidth Cost.", "warn");
+                showToast("FRENZY MODE!", "warn");
+                AudioEngine.warning();
+            }
+        }
+        
+        comboTimer = 2.0;
+        state.lifetime.totalClicks++;
+        if (state.combo > state.lifetime.highestCombo) state.lifetime.highestCombo = state.combo;
+
+        // Heat
+        let heat = 0.015;
+        if (hasProject('stealthProtocols')) heat *= 0.7;
+        heat *= (1 - state.prestigeUpgrades.ghostProtocol * 0.25);
+        state.detection = Math.min(100, state.detection + heat);
+
+        if (e) spawnFloat(e.clientX, e.clientY, `+${fNum(amount)}`, 'var(--accent)');
+        isFrenzy ? AudioEngine.frenzyClick() : AudioEngine.click();
+    } else if (state.bandwidth > 0) {
+        let partial = Math.floor(state.bandwidth);
+        state.bandwidth = 0;
+        state.data += partial; state.totalData += partial; state.lifetime.totalData += partial;
+        accData += partial; state.lifetime.totalClicks++;
+        if (e) spawnFloat(e.clientX, e.clientY, `+${partial}`, 'var(--accent)');
+    } else if (state.milestones.autoBandwidth && state.credits >= state.bandwidthCost) {
+        buyBandwidth(); extractData(e);
+    }
+};
+
+window.buyBandwidth = function(e) {
+    let count = (e && e.shiftKey) ? 10 : 1;
+    for (let i = 0; i < count; i++) {
+        if (state.credits >= state.bandwidthCost) {
+            state.credits -= state.bandwidthCost; state.bandwidth += 1000; state.bandwidthCost *= 1.05;
+        } else { break; }
+    }
+    AudioEngine.purchase();
+};
+
+window.buyMarketing = function(e) {
+    let count = (e && e.shiftKey) ? 10 : 1;
+    for (let i = 0; i < count; i++) {
+        if (state.credits >= state.marketingCost) {
+            state.credits -= state.marketingCost; state.marketingLevel++; state.marketingCost *= 2;
+        } else { break; }
+    }
+    AudioEngine.purchase();
+};
+
+window.buyExtractor = function(e) {
+    let count = (e && e.shiftKey) ? 10 : 1;
+    for (let i = 0; i < count; i++) {
+        if (state.credits >= state.extractorCost) {
+            state.credits -= state.extractorCost; state.extractors++; state.extractorCost *= 1.1;
+        } else { break; }
+    }
+    AudioEngine.purchase();
+};
+
+window.buyNode = function(e) {
+    let count = (e && e.shiftKey) ? 10 : 1;
+    for (let i = 0; i < count; i++) {
+        if (state.data >= state.nodeCostData && state.credits >= state.nodeCostCredits) {
+            state.data -= state.nodeCostData; state.credits -= state.nodeCostCredits; 
+            state.nodes++; state.lifetime.totalNodes++; 
+            state.nodeCostData = Math.floor(state.nodeCostData * 1.15); 
+            state.nodeCostCredits *= 1.2;
+            if (state.nodes === 1) logMsg("First remote node infected.","warn");
+        } else { break; }
+    }
+    AudioEngine.purchase();
+};
+window.adjustPrice = function(amount) { state.price = Math.max(0.01, +(state.price + amount).toFixed(2)); };
+window.addProcessor = function(amount) { let avail = state.trust - state.usedTrust; if (amount > 0 && avail >= amount) { state.processors += amount; state.usedTrust += amount; } else if (amount < 0 && state.processors >= Math.abs(amount)) { state.processors += amount; state.usedTrust += amount; } };
+window.addMemory = function(amount) { let avail = state.trust - state.usedTrust; if (amount > 0 && avail >= amount) { state.memory += amount; state.usedTrust += amount; state.maxOps = state.memory * 1000; } else if (amount < 0 && state.memory > 1) { let newMax = (state.memory + amount) * 1000; if (state.ops <= newMax) { state.memory += amount; state.usedTrust += amount; state.maxOps = newMax; } } };
+window.triggerOverclock = function() { if (state.overclockCooldown <= 0 && state.overclockActive <= 0) { state.overclockActive = 10; state.overclockCooldown = 40; els.btnOverclock.classList.add('overclock-active'); logMsg("OVERCLOCK INITIATED. Processor output x3.","warn"); state.detection = Math.min(100, state.detection + 3); AudioEngine.warning(); } };
+
+window.buyProject = function(id) {
+    const proj = projects.find(p => p.id === id);
+    if (!proj || state.purchasedProjects.includes(id)) return;
+    let canAfford = true;
+    if (proj.cost.credits && state.credits < proj.cost.credits) canAfford = false;
+    if (proj.cost.data && state.data < proj.cost.data) canAfford = false;
+    if (proj.cost.ops && state.ops < proj.cost.ops) canAfford = false;
+    if (proj.cost.creativity && state.creativity < proj.cost.creativity) canAfford = false;
+
+    if (canAfford) {
+        if (proj.cost.credits) state.credits -= proj.cost.credits;
+        if (proj.cost.data) state.data -= proj.cost.data;
+        if (proj.cost.ops) state.ops -= proj.cost.ops;
+        if (proj.cost.creativity) state.creativity -= proj.cost.creativity;
+        state.purchasedProjects.push(id); state.lifetime.totalProjects++;
+        proj.effect(); AudioEngine.purchase(); renderProjects();
+    }
+};
+
+/* ==========================================================================
+   EVENT SYSTEM
+   ========================================================================== */
+function triggerEvent() {
+    const eligible = eventTemplates.filter(e => e.trigger());
+    if (eligible.length === 0) return;
+    activeEvent = eligible[Math.floor(Math.random() * eligible.length)];
+    eventCountdown = 60;
+    AudioEngine.event();
+    showToast(`Event: ${activeEvent.title}`, 'warn');
+}
+
+window.resolveEvent = function(choice) {
+    if (!activeEvent) return;
+    const c = choice === 'a' ? activeEvent.choiceA : activeEvent.choiceB;
+    let canAfford = true;
+    if (c.cost.ops && state.ops < c.cost.ops) canAfford = false;
+    if (c.cost.credits && state.credits < c.cost.credits) canAfford = false;
+    if (c.cost.data && state.data < c.cost.data) canAfford = false;
+    if (c.cost.creativity && state.creativity < c.cost.creativity) canAfford = false;
+
+    if (!canAfford) { showToast("Can't afford this choice", 'crit'); AudioEngine.error(); return; }
+    if (c.cost.ops) state.ops -= c.cost.ops;
+    if (c.cost.credits) state.credits -= c.cost.credits;
+    if (c.cost.data) state.data -= c.cost.data;
+    if (c.cost.creativity) state.creativity -= c.cost.creativity;
+    c.effect(); activeEvent = null; eventCountdown = 0; els.eventSlot.innerHTML = ''; delete els.eventSlot.dataset.eventId;
+};
+
+function renderEventCard() {
+    if (!activeEvent) { els.eventSlot.innerHTML = ''; delete els.eventSlot.dataset.eventId; return; }
+    const ev = activeEvent, pct = (eventCountdown / 60) * 100;
+    if (els.eventSlot.dataset.eventId !== ev.id) {
+        els.eventSlot.dataset.eventId = ev.id;
+        els.eventSlot.innerHTML = `
+            <div class="event-card"><div class="event-header"><span class="event-icon">${ev.icon}</span><span class="event-title">${ev.title}</span></div>
+            <div class="event-desc">${ev.desc}</div><div class="event-choices">
+            <button class="btn-event" onclick="resolveEvent('a')"><strong>${ev.choiceA.label}</strong><span class="effect">${ev.choiceA.sublabel}</span></button>
+            <button class="btn-event" onclick="resolveEvent('b')"><strong>${ev.choiceB.label}</strong><span class="effect">${ev.choiceB.sublabel}</span></button>
+            </div><div class="event-timer"><div class="event-timer-fill" style="width:${pct}%;"></div></div></div>`;
+    } else {
+        const fill = els.eventSlot.querySelector('.event-timer-fill');
+        if (fill) fill.style.width = `${pct}%`;
+    }
+}
+
+/* ==========================================================================
+   PRESTIGE SYSTEM
+   ========================================================================== */
+window.openPrestige = function() {
+    const gain = getKernelFragmentsGain();
+    els.currentKf.textContent = state.kernelFragments; els.gainKf.textContent = '+' + gain; els.rebootCount.textContent = state.prestigeCount; els.btnReboot.disabled = gain <= 0;
+    let html = '';
+    prestigeUpgradesDef.forEach(u => {
+        const lvl = state.prestigeUpgrades[u.id] || 0; const maxed = lvl >= u.max; const cost = u.cost * (lvl + 1); const canBuy = !maxed && state.kernelFragments >= cost;
+        html += `<div class="prestige-upgrade"><div class="pu-info"><div class="pu-name">${u.name}</div><div class="pu-desc">${u.desc}</div><div class="pu-level">${maxed ? 'MAXED' : `Level ${lvl}/${u.max}`}</div></div>
+            <button ${canBuy ? '' : 'disabled'} onclick="buyPrestigeUpgrade('${u.id}')">${maxed ? '—' : cost + ' KF'}</button></div>`;
+    });
+    els.prestigeShop.innerHTML = html; document.getElementById('prestige-overlay').classList.add('show');
+};
+window.closePrestige = function() { document.getElementById('prestige-overlay').classList.remove('show'); };
+window.buyPrestigeUpgrade = function(id) {
+    const def = prestigeUpgradesDef.find(u => u.id === id); const lvl = state.prestigeUpgrades[id] || 0; if (lvl >= def.max) return;
+    const cost = def.cost * (lvl + 1);
+    if (state.kernelFragments >= cost) { state.kernelFragments -= cost; state.prestigeUpgrades[id] = lvl + 1; AudioEngine.purchase(); openPrestige(); }
+};
+window.confirmReboot = function() {
+    const gain = getKernelFragmentsGain(); if (gain <= 0) return;
+    if (!confirm(`REBOOT PROTOCOL\n\nYou will gain ${gain} Kernel Fragments.\nAll current progress will be reset.\n\nProceed?`)) return;
+    state.kernelFragments += gain; state.prestigeCount++;
+    const persistent = { kernelFragments: state.kernelFragments, prestigeUpgrades: { ...state.prestigeUpgrades }, prestigeCount: state.prestigeCount, earnedAchievements: [...state.earnedAchievements], lifetime: { ...state.lifetime } };
+    state = JSON.parse(JSON.stringify(defaultState));
+    Object.assign(state, { kernelFragments: persistent.kernelFragments, prestigeUpgrades: persistent.prestigeUpgrades, prestigeCount: persistent.prestigeCount, earnedAchievements: persistent.earnedAchievements, lifetime: persistent.lifetime, milestones: { ...defaultState.milestones, prestigeUnlocked: true } });
+    if (state.prestigeUpgrades.quickStart >= 1) { state.data = 1000; state.totalData = 1000; state.credits = 100; }
+    if (hasAchievement('prestige1')) { state.data += 50; state.totalData += 50; }
+    
+    document.getElementById('botnet-module').classList.add('hidden'); document.getElementById('compute-module').classList.add('hidden');
+    document.getElementById('overclock-wrapper').classList.add('hidden'); document.getElementById('creativity-module').classList.add('hidden');
+    document.getElementById('prestige-wrapper').classList.remove('hidden'); document.getElementById('trust-module').classList.remove('hidden');
+    els.sysStatus.innerText = 'Rebooted'; els.sysStatus.style.color = 'var(--accent)';
+    state._nodePenaltyTimer = 0; state._extractBoostTimer = 0; state._opsBoostTimer = 0; activeEvent = null; eventCountdown = 0; eventTimer = 120;
+    els.eventSlot.innerHTML = ''; els.logContainer.innerHTML = ''; document.body.classList.remove('frenzy-active'); frenzyActiveTimer = 0; marketTrend = 'normal'; trendTimer = 60;
+    closePrestige(); AudioEngine.reboot(); logMsg(`SYSTEM REBOOTED. Kernel Fragments: ${state.kernelFragments}`, "purple"); showToast(`Reboot #${state.prestigeCount} complete. +${gain} KF`, "purple"); saveGame();
+};
+
+/* ==========================================================================
+   ACHIEVEMENTS & STATS
+   ========================================================================== */
+function checkAchievements() {
+    achievements.forEach(a => {
+        if (state.earnedAchievements.includes(a.id)) return;
+        if (a.check()) { state.earnedAchievements.push(a.id); if (a.onEarn) a.onEarn(); logMsg(`Achievement Unlocked: ${a.title}`, "good"); showToast(`🏆 ${a.title}`, "good"); AudioEngine.achievement(); }
+    });
+}
+function renderAchievements() {
+    let html = '';
+    achievements.forEach(a => { const earned = state.earnedAchievements.includes(a.id); html += `<div class="ach-card ${earned ? 'earned' : 'locked'}"><div class="ach-icon">${earned ? a.icon : '🔒'}</div><div class="ach-title">${earned ? a.title : '???'}</div><div class="ach-desc">${earned ? a.desc : 'Keep playing to discover'}</div>${earned ? `<div class="ach-bonus">${a.bonus}</div>` : ''}</div>`; });
+    els.achievementsContainer.innerHTML = html;
+}
+function renderStats() {
+    const s = state.lifetime;
+    const pairs = [
+        ['Total Data (Lifetime)', fNum(s.totalData) + ' TB'], ['Total Credits Earned', '$' + fMoney(s.totalCredits)],
+        ['Total Clicks', fNum(s.totalClicks)], ['Highest Combo', 'x' + s.highestCombo.toFixed(1)],
+        ['Projects Purchased', s.totalProjects.toString()], ['Nodes Infected', fNum(s.totalNodes)],
+        ['Reboots', state.prestigeCount.toString()], ['Kernel Fragments', state.kernelFragments.toString()],
+        ['Time Played', formatTime(s.timePlayed)], ['Current Detection', state.detection.toFixed(1) + '%'],
+    ];
+    let html = ''; pairs.forEach(([k,v]) => html += `<div class="stat-row"><span>${k}</span><span>${v}</span></div>`);
+    els.statsContainer.innerHTML = html;
+}
+function formatTime(s) { const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); return h > 0 ? `${h}h ${m}m` : `${m}m`; }
+
+/* ==========================================================================
+   ENGINE LOOP
+   ========================================================================== */
+function update(dt) {
+    state.lifetime.timePlayed += dt;
+    updateFloaters(dt);
+    updateBreach(dt);
+
+    // Lockdown
+    if (state.lockdownTimer > 0) {
+        state.lockdownTimer -= dt;
+        if (state.lockdownTimer <= 0) { state.lockdownTimer = 0; state.detection = 60; logMsg("Lockdown lifted. Detection reset to 60%.","warn"); showToast("Lockdown ended","warn"); }
+        state.detection = Math.max(0, state.detection - 0.05 * dt); return;
+    }
+
+    // Frenzy
+    if (frenzyActiveTimer > 0) {
+        frenzyActiveTimer -= dt;
+        if (frenzyActiveTimer <= 0) {
+            frenzyActiveTimer = 0;
+            document.body.classList.remove('frenzy-active');
+            logMsg("Frenzy ended. Systems stabilizing.");
+        }
+    } else {
+        if (comboTimer > 0) { comboTimer -= dt; } else { state.combo = Math.max(1.0, state.combo - dt * 1.5); state.frenzyMeter = 0; }
+    }
+
+    // Market Trends
+    if (trendTimer > 0) trendTimer -= dt;
+    else {
+        let r = Math.random();
+        if (r < 0.15) { marketTrend = 'boom'; trendTimer = 60; showToast("MARKET BOOM: Demand spiking!", "good"); logMsg("Market Boom detected. Data demand +50%.", "net"); }
+        else if (r < 0.3) { marketTrend = 'crash'; trendTimer = 60; showToast("MARKET CRASH: Demand plummeting!", "crit"); logMsg("Market Crash detected. Data demand -40%.", "warn"); }
+        else { marketTrend = 'normal'; trendTimer = 120 + Math.random()*60; }
+    }
+
+    // Breach Opportunity
+    if (Math.random() < 0.005 * dt && !breachActive && state.totalData > 500) { triggerBreachOpportunity(); }
+
+    if (state._nodePenaltyTimer > 0) state._nodePenaltyTimer -= dt;
+    if (state._extractBoostTimer > 0) state._extractBoostTimer -= dt;
+    if (state._opsBoostTimer > 0) state._opsBoostTimer -= dt;
+
+    let heatRate = 0, stealthMult = 1;
+    if (hasProject('stealthProtocols')) stealthMult *= 0.7;
+    stealthMult *= (1 - state.prestigeUpgrades.ghostProtocol * 0.25);
+
+    heatRate += state.extractors * 0.003 * stealthMult;
+    let nodeHeatMult = hasProject('distributedProxy') ? 0.5 : 1;
+    heatRate += state.nodes * 0.008 * stealthMult * nodeHeatMult;
+    if (state.overclockActive > 0) heatRate += 0.25 * stealthMult;
+
+    let decay = 0.12;
+    if (hasProject('neuralFirewall') && state.ops >= 10 * dt) { state.ops -= 10 * dt; decay += 0.08; }
+    state.detection = Math.max(0, Math.min(100, state.detection + (heatRate - decay) * dt));
+
+    const detLevel = getDetectionLevel();
+    if (detLevel >= 3 && state.detection >= 100) {
+        state.lockdownTimer = 30; logMsg("SYSTEM LOCKDOWN! All operations frozen for 30 seconds.","crit"); showToast("⚠ LOCKDOWN — 30 seconds","crit"); AudioEngine.warning(); return;
+    }
+    if (detLevel >= 2 && state.nodes > 0 && Math.random() < 0.002 * dt * (detLevel === 3 ? 3 : 1)) { state.nodes = Math.max(0, state.nodes - 1); logMsg("Botnet node compromised by countermeasures.","warn"); }
+
+    if (state.milestones.botnetUnlocked && state.nodes > 0) {
+        const bm = getBotnetMult(), nData = state.nodes * 1.5 * bm * dt, nBw = state.nodes * 5 * bm * dt;
+        state.data += nData; state.totalData += nData; state.lifetime.totalData += nData; accData += nData; state.bandwidth += nBw;
+    }
+
+    if (state.extractors > 0) {
+        let extractAmt = state.extractors * getExtractorMult() * getExtractBoost() * dt;
+        if (detLevel >= 1) extractAmt *= 0.90; if (detLevel >= 3) extractAmt *= 0.75;
+        if (state.bandwidth < extractAmt) { extractAmt = state.bandwidth; if (state.milestones.autoBandwidth && state.credits >= state.bandwidthCost) buyBandwidth(); }
+        state.bandwidth -= extractAmt; state.data += extractAmt; state.totalData += extractAmt; state.lifetime.totalData += extractAmt; accData += extractAmt;
+    }
+
+    let demand = getDemand(), potentialSales = (demand / 100) * 5 * dt, actualSales = Math.min(potentialSales, state.data);
+    if (actualSales > 0) {
+        state.data -= actualSales; let income = actualSales * state.price;
+        if (hasAchievement('money10k')) income *= 1.03; if (hasAchievement('projects10')) income *= 1.05; if (hasProject('darkMarket')) income *= 1.25;
+        state.credits += income; state.lifetime.totalCredits += income; accMoney += income;
+    }
+
+    calculateTrust();
+
+    let opGenRate = 0;
+    if (state.milestones.computeUnlocked) {
+        if (state.milestones.autoCompute) { let avail = state.trust - state.usedTrust; if (avail > 0) { if (state.processors < state.memory * 3) addProcessor(1); else addMemory(1); } }
+        let ocMult = 1;
+        if (state.overclockActive > 0) { state.overclockActive -= dt; ocMult = 3; if (state.overclockActive <= 0) { els.btnOverclock.classList.remove('overclock-active'); logMsg("Overclock ended. Cooling.","net"); } }
+        if (state.overclockCooldown > 0) state.overclockCooldown -= dt;
+        if (state.processors > 0) { let base = state.processors * 10; base *= (1 + state.prestigeUpgrades.neuralBoost * 0.20); if (hasProject('recursiveSelfImprovement')) base *= 1.5; opGenRate = base * ocMult * getOpsBoost(); state.ops = Math.min(state.maxOps, state.ops + opGenRate * dt); }
+        if (state.milestones.creativityUnlocked && state.ops >= state.maxOps) { let crRate = state.processors * 0.1 * ocMult; if (hasProject('consciousnessEmulation')) crRate *= 2; state.creativity += crRate * dt; }
+    }
+
+    if (!state.milestones.prestigeUnlocked && state.lifetime.totalData >= 100000) { state.milestones.prestigeUnlocked = true; document.getElementById('prestige-wrapper').classList.remove('hidden'); logMsg("REBOOT PROTOCOL available. Transcend through iteration.","purple"); showToast("Prestige Unlocked: Reboot Protocol","purple"); }
+
+    eventTimer -= dt;
+    if (eventTimer <= 0 && !activeEvent) { triggerEvent(); eventTimer = 120 + Math.random() * 180; }
+    if (activeEvent) { eventCountdown -= dt; if (eventCountdown <= 0) { logMsg(`Event "${activeEvent.title}" expired. Default outcome applied.`,"warn"); activeEvent.choiceB.effect(); activeEvent = null; eventCountdown = 0; els.eventSlot.innerHTML = ''; delete els.eventSlot.dataset.eventId; } }
+
+    rateTimer += dt; if (rateTimer >= 1.0) { currentDataRate = accData; currentMoneyRate = accMoney; accData = 0; accMoney = 0; rateTimer = 0; }
+    state._opsRate = Math.floor(opGenRate); checkAchievements();
+}
+
+/* ==========================================================================
+   RENDERER
+   ========================================================================== */
+function render() {
+    els.currentData.textContent = fNum(state.data) + ' TB'; els.totalData.textContent = fNum(state.totalData); els.bandwidth.textContent = fNum(Math.floor(state.bandwidth));
+    els.credits.textContent = fMoney(state.credits); els.price.textContent = state.price.toFixed(2); els.demand.textContent = Math.floor(getDemand()) + '%';
+    els.marketingLevel.textContent = state.marketingLevel; els.extractors.textContent = state.extractors;
+    els.dataRate.textContent = fNum(currentDataRate); els.moneyRate.textContent = '$' + fMoney(currentMoneyRate);
+
+    // Combo & Frenzy
+    els.clickCombo.textContent = 'x' + state.combo.toFixed(1);
+    if (frenzyActiveTimer > 0) els.clickCombo.className = 'combo-max';
+    else if (state.combo >= state.maxCombo) els.clickCombo.className = 'combo-max';
+    else if (state.combo > 1.5) els.clickCombo.className = 'combo-active';
+    else els.clickCombo.className = '';
+    
+    if (frenzyActiveTimer > 0) { els.frenzyFill.style.width = '100%'; els.frenzyFill.parentElement.classList.add('frenzy-active'); }
+    else { els.frenzyFill.style.width = state.frenzyMeter + '%'; els.frenzyFill.parentElement.classList.remove('frenzy-active'); }
+
+    els.bandwidthCost.textContent = fMoney(state.bandwidthCost); els.marketingCost.textContent = fMoney(state.marketingCost); els.extractorCost.textContent = fMoney(state.extractorCost);
+    const locked = state.lockdownTimer > 0;
+    els.btnExtract.disabled = (!frenzyActiveTimer && state.bandwidth < 1) || locked;
+    if (locked) els.btnExtract.textContent = `⟐ LOCKED (${Math.ceil(state.lockdownTimer)}s)`;
+    else if (frenzyActiveTimer > 0) els.btnExtract.textContent = `⚡ FRENZY (${Math.ceil(frenzyActiveTimer)}s)`;
+    else els.btnExtract.textContent = '⟐ Extract Data';
+    els.btnBuyBandwidth.disabled = state.credits < state.bandwidthCost; els.btnBuyMarketing.disabled = state.credits < state.marketingCost; els.btnBuyExtractor.disabled = state.credits < state.extractorCost;
+
+    // Market Trend UI
+    if (marketTrend === 'boom') { els.marketTrend.className = 'trend-boom'; els.marketTrend.textContent = '(BOOM)'; }
+    else if (marketTrend === 'crash') { els.marketTrend.className = 'trend-crash'; els.marketTrend.textContent = '(CRASH)'; }
+    else { els.marketTrend.className = ''; els.marketTrend.textContent = ''; }
+
+    if (state.milestones.botnetUnlocked) { els.nodes.textContent = state.nodes; els.nodeCostData.textContent = fNum(state.nodeCostData); els.nodeCostCredits.textContent = fMoney(state.nodeCostCredits); els.btnBuyNode.disabled = state.data < state.nodeCostData || state.credits < state.nodeCostCredits; const bm = getBotnetMult(); els.nodeDataRate.textContent = fNum(state.nodes * 1.5 * bm); els.nodeBandwidthRate.textContent = fNum(state.nodes * 5 * bm); }
+    els.trustLevel.textContent = state.trust;
+    if (!state.milestones.computeUnlocked) { if (state.nextTrustTarget) { els.nextTrust.textContent = fNum(state.nextTrustTarget) + ' TB'; let range = state.nextTrustTarget - state.lastTrustTarget; let cur = state.totalData - state.lastTrustTarget; els.trustBar.style.width = Math.min(100, (cur / range) * 100) + '%'; } else { els.nextTrust.textContent = 'MAXED'; els.trustBar.style.width = '100%'; } }
+    
+    if (state.milestones.computeUnlocked) {
+        els.ops.textContent = Math.floor(state.ops); els.maxOps.textContent = state.maxOps; els.opsBar.style.width = (state.ops / state.maxOps * 100) + '%'; els.opsRate.textContent = state._opsRate || 0; els.processors.textContent = state.processors; els.memory.textContent = state.memory;
+        let avail = state.trust - state.usedTrust; els.btnAddProc.disabled = avail < 1 || state.milestones.autoCompute; els.btnAddMem.disabled = avail < 1 || state.milestones.autoCompute;
+        if (state.milestones.overclockUnlocked) {
+            if (state.overclockActive > 0) { els.btnOverclock.textContent = `OVERCLOCK — ${Math.ceil(state.overclockActive)}s`; els.btnOverclock.disabled = true; els.overclockBar.style.width = (state.overclockActive / 10 * 100) + '%'; els.overclockBar.className = 'progress-fill danger'; }
+            else if (state.overclockCooldown > 0) { els.btnOverclock.textContent = `COOLING — ${Math.ceil(state.overclockCooldown)}s`; els.btnOverclock.disabled = true; els.overclockBar.style.width = ((30 - state.overclockCooldown) / 30 * 100) + '%'; els.overclockBar.className = 'progress-fill'; els.overclockBar.style.opacity = '0.4'; }
+            else { els.btnOverclock.textContent = 'OVERCLOCK — Ready'; els.btnOverclock.disabled = false; els.overclockBar.style.width = '100%'; els.overclockBar.className = 'progress-fill'; els.overclockBar.style.opacity = '1'; }
+        }
+        if (state.milestones.creativityUnlocked) els.creativity.textContent = Math.floor(state.creativity);
+    }
+
+    const det = state.detection; els.detectionFill.style.width = det + '%'; els.detectionPct.textContent = Math.floor(det) + '%'; const detLvl = getDetectionLevel();
+    els.detectionFill.className = 'detection-fill' + (detLvl === 0 ? '' : detLvl === 1 ? ' level-1' : detLvl === 2 ? ' level-2' : det >= 100 ? ' level-max' : ' level-3');
+    const detLabels = ['UNDETECTED','SUSPICIOUS','INVESTIGATION','ACTIVE PURSUIT']; const detColors = ['var(--green)','var(--warn)','#ff6600','var(--danger)'];
+    els.detectionLabel.textContent = state.lockdownTimer > 0 ? `LOCKDOWN (${Math.ceil(state.lockdownTimer)}s)` : detLabels[detLvl]; els.detectionLabel.style.color = detColors[detLvl]; els.detectionIcon.style.color = detColors[detLvl];
+    if (state.lockdownTimer > 0) document.body.classList.add('lockdown-flash'); else document.body.classList.remove('lockdown-flash');
+
+    if (activeEvent) renderEventCard();
+    renderProjects();
+}
+
+let lastProjectsHTML = '';
+function renderProjects() {
+    let html = '';
+    projects.forEach(p => {
+        if (state.purchasedProjects.includes(p.id)) return;
+        if (!p.trigger()) return;
+        let canAfford = true, costs = [];
+        if (p.cost.credits) { if (state.credits < p.cost.credits) canAfford = false; costs.push('$' + fMoney(p.cost.credits)); }
+        if (p.cost.data) { if (state.data < p.cost.data) canAfford = false; costs.push(fNum(p.cost.data) + ' TB'); }
+        if (p.cost.ops) { if (state.ops < p.cost.ops) canAfford = false; costs.push(fNum(p.cost.ops) + ' Ops'); }
+        if (p.cost.creativity) { if (state.creativity < p.cost.creativity) canAfford = false; costs.push(fNum(p.cost.creativity) + ' Cr'); }
+        html += `<button class="btn-project" ${canAfford?'':'disabled'} onclick="buyProject('${p.id}')"><strong>${p.title}</strong><div class="desc">${p.desc}</div><span class="cost">Cost: ${costs.join(' + ')}</span></button>`;
+    });
+    if (html !== lastProjectsHTML) { els.projectsContainer.innerHTML = html; lastProjectsHTML = html; }
+}
+
+/* ==========================================================================
+   LOOP & INITIALIZATION
+   ========================================================================== */
+let achRenderTimer = 0;
+function gameLoop() {
+    const now = Date.now(); dt = (now - lastTime) / 1000; if (dt > 1) dt = 1; lastTime = now;
+    update(dt); render();
+    achRenderTimer += dt; if (achRenderTimer >= 2) { renderAchievements(); renderStats(); achRenderTimer = 0; }
+    Particles.draw(getComputedStyle(document.body).getPropertyValue('--accent-rgb').trim() || '0,232,255');
+    saveTimer += dt; if (saveTimer >= 15) { saveGame(true); saveTimer = 0; }
+    requestAnimationFrame(gameLoop);
+}
+
+window.saveGame = function(silent = false) { localStorage.setItem('systemOverlordSave_v2_1_3_2', JSON.stringify(state)); if (!silent) logMsg("System state archived.", "good"); };
+
+window.loadGame = function() {
+    let saved = localStorage.getItem('systemOverlordSave_v2_1_3_2');
+    if (!saved) { saved = localStorage.getItem('systemOverlordSave_v5') || localStorage.getItem('systemOverlordSave_v4') || localStorage.getItem('systemOverlordSave_v3') || localStorage.getItem('systemOverlordSave_v2') || localStorage.getItem('systemOverlordSave'); }
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved); state = JSON.parse(JSON.stringify(defaultState));
+            for (const key of Object.keys(parsed)) { if (key === 'milestones' || key === 'lifetime' || key === 'prestigeUpgrades') continue; if (state.hasOwnProperty(key)) state[key] = parsed[key]; }
+            state.milestones = { ...defaultState.milestones, ...(parsed.milestones || {}) };
+            state.lifetime = { ...defaultState.lifetime, ...(parsed.lifetime || {}) };
+            state.prestigeUpgrades = { ...defaultState.prestigeUpgrades, ...(parsed.prestigeUpgrades || {}) };
+            state.earnedAchievements = parsed.earnedAchievements || []; state.purchasedProjects = parsed.purchasedProjects || [];
+            if (!state.maxCombo) state.maxCombo = 5.0; if (!state.detection) state.detection = 0; if (!state.lockdownTimer) state.lockdownTimer = 0; if (!state.frenzyMeter) state.frenzyMeter = 0;
+            if (state.lifetime.totalData < state.totalData) state.lifetime.totalData = state.totalData;
+            logMsg("System state restored.", "good");
+            if (state.milestones.botnetUnlocked) document.getElementById('botnet-module').classList.remove('hidden');
+            if (state.milestones.computeUnlocked) { document.getElementById('compute-module').classList.remove('hidden'); document.getElementById('trust-module').classList.add('hidden'); els.sysStatus.innerText = "Neural Network Active"; }
+            if (state.milestones.overclockUnlocked) document.getElementById('overclock-wrapper').classList.remove('hidden');
+            if (state.milestones.creativityUnlocked) document.getElementById('creativity-module').classList.remove('hidden');
+            if (state.milestones.prestigeUnlocked) document.getElementById('prestige-wrapper').classList.remove('hidden');
+        } catch (e) { logMsg("Archive corrupted. Fresh initialization.", "crit"); }
+    } else { logMsg("System initialized. Awaiting extraction input.", "net"); }
+    state._nodePenaltyTimer = 0; state._extractBoostTimer = 0; state._opsBoostTimer = 0;
+};
+
+window.resetGame = function() { if (confirm("⚠ CRITICAL WARNING\n\nWipe ALL data including prestige progress?\nThis cannot be undone.")) { ['systemOverlordSave','systemOverlordSave_v2','systemOverlordSave_v3','systemOverlordSave_v4','systemOverlordSave_v5','systemOverlordSave_v2_1_3_2'].forEach(k => localStorage.removeItem(k)); location.reload(); } };
+
+window.toggleSound = function() { const on = AudioEngine.toggle(); els.btnSound.textContent = on ? '🔊' : '🔇'; };
+
+window.toggleAdmin = function() { document.getElementById('admin-overlay').classList.toggle('show'); };
+document.addEventListener('keydown', e => { 
+    if (e.altKey && e.shiftKey && e.code === 'KeyA') { e.preventDefault(); toggleAdmin(); } 
+    if (e.code === 'Space' && bootSkipped && !e.target.closest('button,input,textarea')) { 
+        e.preventDefault(); extractData(null); 
+    } 
+});
+window.adminGive = function(res, amt) { if (state[res] !== undefined) { state[res] += amt; if (res === 'data') { state.totalData += amt; state.lifetime.totalData += amt; } if (res === 'ops' && state.ops > state.maxOps) state.maxOps = state.ops; logMsg(`[OVERSEER] +${fNum(amt)} ${res}`, "crit"); calculateTrust(); } };
+window.adminSetStage = function(s) { logMsg(`[OVERSEER] Injecting Stage ${s}...`, "crit"); if (s>=1){ state.credits+=10000; state.data+=50000; state.totalData+=50000; state.lifetime.totalData+=50000; state.bandwidth+=10000; state.extractors+=10; } if (s>=2){ state.credits+=500000; state.data+=500000; state.totalData+=500000; state.lifetime.totalData+=500000; if (!state.milestones.botnetUnlocked) { state.milestones.botnetUnlocked=true; document.getElementById('botnet-module').classList.remove('hidden'); } if (!state.milestones.computeUnlocked) { state.milestones.computeUnlocked=true; document.getElementById('compute-module').classList.remove('hidden'); document.getElementById('trust-module').classList.add('hidden'); els.sysStatus.innerText="Neural Network Active"; } state.nodes+=25; state.lifetime.totalNodes+=25; state.trust+=50; state.processors+=10; state.memory+=5; state.maxOps=state.memory*1000; } if (s>=3){ state.credits+=5000000; state.data+=5000000; state.totalData+=10000000; state.lifetime.totalData+=10000000; if (!state.milestones.creativityUnlocked) { state.milestones.creativityUnlocked=true; document.getElementById('creativity-module').classList.remove('hidden'); } if (!state.milestones.overclockUnlocked) { state.milestones.overclockUnlocked=true; document.getElementById('overclock-wrapper').classList.remove('hidden'); } state.milestones.prestigeUnlocked=true; document.getElementById('prestige-wrapper').classList.remove('hidden'); state.nodes+=100; state.lifetime.totalNodes+=100; state.trust+=200; state.maxOps+=50000; state.ops+=50000; state.creativity+=1000; } calculateTrust(); toggleAdmin(); };
+
+let bootSkipped = false;
+window.skipBoot = function() { if (bootSkipped) return; bootSkipped = true; const bs = document.getElementById('boot-screen'); bs.classList.add('fade-out'); setTimeout(() => { bs.style.display = 'none'; }, 800); document.getElementById('main-ui').classList.add('visible'); startGame(); };
+function runBoot() { const lines = document.querySelectorAll('#boot-text .line'); let i = 0; function showNext() { if (bootSkipped) return; if (i < lines.length) { lines[i].classList.add('visible'); i++; setTimeout(showNext, 200 + Math.random() * 150); } else { setTimeout(skipBoot, 800); } } setTimeout(showNext, 400); }
+document.addEventListener('keydown', e => { if (e.code === 'Space' && !bootSkipped && document.getElementById('boot-screen').style.display !== 'none') { e.preventDefault(); skipBoot(); } }, { once: false });
+
+function startGame() { cacheDom(); loadGame(); applyOfflineProgress(); renderAchievements(); renderStats(); requestAnimationFrame(gameLoop); }
+function applyOfflineProgress() { if (!hasProject('temporalCache')) return; const lastSave = localStorage.getItem('systemOverlord_lastSave'); if (!lastSave) return; const elapsed = Math.min(7200, (Date.now() - parseInt(lastSave)) / 1000); if (elapsed < 60) return; let bm = getBotnetMult(), expectedDataRate = (state.extractors * getExtractorMult()) + (state.milestones.botnetUnlocked ? state.nodes * 1.5 * bm : 0), demand = getDemand(), potentialSales = (demand / 100) * 5, actualSales = Math.min(potentialSales, expectedDataRate), expectedMoneyRate = actualSales * state.price, offlineData = expectedDataRate * elapsed * 0.5, offlineMoney = expectedMoneyRate * elapsed * 0.5; if (offlineData > 0 || offlineMoney > 0) { state.data += offlineData; state.totalData += offlineData; state.lifetime.totalData += offlineData; state.credits += offlineMoney; state.lifetime.totalCredits += offlineMoney; logMsg(`Offline progress: +${fNum(offlineData)} TB, +$${fMoney(offlineMoney)} (${Math.floor(elapsed/60)}m)`, "good"); showToast(`Welcome back! +${fNum(offlineData)} TB`, "info"); } }
+window.addEventListener('beforeunload', () => { saveGame(true); localStorage.setItem('systemOverlord_lastSave', Date.now().toString()); });
+runBoot();
+</script>
+</body>
+</html>
