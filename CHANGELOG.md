@@ -1,4 +1,7 @@
-﻿### v3.1.0 - UI Polish & God Mode
+﻿### v3.1.1 - Clean Text Hotfix
+*   **Gibberish Removed:** Hunted down and eliminated a huge set of mangled characters/emojis from achievements, logs, and network displays. Replaced them with clean unicode symbols.
+
+### v3.1.0 - UI Polish & God Mode
 *   **Settings Expansion:** Added CRT Scanline toggles, global Tooltips toggle, and Save Management (Export/Import) buttons.
 *   **Admin Panel Overhaul:** Replaced basic buttons with a robust "God Mode" direct injection system, allowing specific custom inputs. Added system overrides for Threat Levels, Ops, and Thermal Heat.
 *   **Tooltips Expansion:** Added a global dynamic tooltip engine with deep coverage across Resources, Vitals, the Top Bar, Extract buttons, and Tabs.
@@ -74,4 +77,5 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Restored `agent-update_info.txt` to align with protocol.
 - First complete stable SPA version.
+
 

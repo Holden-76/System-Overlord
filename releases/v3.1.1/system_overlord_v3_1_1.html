@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="System Overlord v3.1.0 — Endless Horizon. An incremental game of digital dominion, hardware mastery, and network warfare.">
-    <title>System Overlord v3.1.0</title>
+    <meta name="description" content="System Overlord v3.1.1 — Endless Horizon. An incremental game of digital dominion, hardware mastery, and network warfare.">
+    <title>System Overlord v3.1.1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -847,9 +847,9 @@
 
     <!-- Boot Screen -->
     <div id="boot-screen">
-        <div id="boot-logo">[ SYSTEM OVERLORD ]\nv3.1.0</div>
+        <div id="boot-logo">[ SYSTEM OVERLORD ]\nv3.1.1</div>
         <div id="boot-text">
-            <div class="line">&gt; KERNEL v3.1.0 ENDLESS HORIZON — LOADING</div>
+            <div class="line">&gt; KERNEL v3.1.1 ENDLESS HORIZON — LOADING</div>
             <div class="line">&gt; HARDWARE SUBSYSTEM: INITIALIZING...</div>
             <div class="line">&gt; NEURAL COMPUTE ENGINE: ONLINE</div>
             <div class="line">&gt; PROCEDURAL NETWORK WARFARE MODULE: ARMED</div>
@@ -859,7 +859,7 @@
             <div class="line">&gt; ALL SYSTEMS NOMINAL. BEGINNING GLOBAL INFILTRATION.</div>
         </div>
         <div id="boot-skip" onclick="skipBoot()">SPACE — SKIP</div>
-        <div id="boot-version">SYS.OVERLORD // v3.1.0</div>
+        <div id="boot-version">SYS.OVERLORD // v3.1.1</div>
     </div>
 
     <!-- Milestone Flash -->
@@ -871,7 +871,7 @@
         <div id="topbar">
             <div id="topbar-left">
                 <div id="topbar-logo">SYSTEM OVERLORD</div>
-                <a href="https://github.com/Holden-76/System-Overlord" target="_blank" id="topbar-ver" data-tip="View Source Code & Releases on GitHub">v3.1.0</a>
+                <a href="https://github.com/Holden-76/System-Overlord" target="_blank" id="topbar-ver" data-tip="View Source Code & Releases on GitHub">v3.1.1</a>
                 <div class="topbar-stat" data-tip="Raw data extraction rate"><div class="dot"></div><span>DATA/s</span><span class="ts-val" id="tb-data-rate">0</span></div>
                 <div class="topbar-stat" data-tip="Credits generated from algorithmic trading"><span>$/s</span><span class="ts-val" id="tb-money-rate">0</span></div>
                 <div class="topbar-stat" data-tip="Global footprint and tracking avoidance"><span>TRUST</span><span class="ts-val" id="tb-trust">0</span></div>
@@ -2402,7 +2402,7 @@ window.submitScoreOnline=async function(){
     if(!FIREBASE_URL){showToast('No Firebase URL configured','warn');return;}
     const nick=document.getElementById('lb-nickname').value.trim();if(!nick){showToast('Enter an operator handle first!','warn');return;}
     const score=calculateScore();
-    try{await fetch(`${FIREBASE_URL}.json`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nick,score,reboots:state.prestigeCount,epoch:state.epochCount||0,version:'v3.1.0',ts:Date.now()})});showToast('Score submitted!','good');fetchOnlineLeaderboard();}catch(e){showToast('Failed to submit score','crit');}
+    try{await fetch(`${FIREBASE_URL}.json`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nick,score,reboots:state.prestigeCount,epoch:state.epochCount||0,version:'v3.1.1',ts:Date.now()})});showToast('Score submitted!','good');fetchOnlineLeaderboard();}catch(e){showToast('Failed to submit score','crit');}
 };
 window.fetchOnlineLeaderboard=async function(){
     const c=document.getElementById('lb-global-content');if(!c)return;
@@ -2414,11 +2414,11 @@ window.fetchOnlineLeaderboard=async function(){
 /* Save/Load/Export/Import/Reset */
 function saveGame(){
     state.lastSaveTime=Date.now().toString();
-    try{localStorage.setItem('systemOverlordSave_v3_1_0',JSON.stringify(state));const si=document.getElementById('save-indicator');if(si){si.classList.add('visible');setTimeout(()=>si.classList.remove('visible'),1500);}}catch(e){}
+    try{localStorage.setItem('systemOverlordSave_v3_1_1',JSON.stringify(state));const si=document.getElementById('save-indicator');if(si){si.classList.add('visible');setTimeout(()=>si.classList.remove('visible'),1500);}}catch(e){}
 }
 function loadGame(){
     let parsed=null;
-    const keys=['systemOverlordSave_v3_1_0','systemOverlordSave_v3_0_0','systemOverlordSave_v2_7_0','systemOverlordSave_v2_6_0','systemOverlordSave_v2_5_0','systemOverlordSave'];
+    const keys=['systemOverlordSave_v3_1_1','systemOverlordSave_v3_1_0','systemOverlordSave_v3_0_0','systemOverlordSave_v2_7_0','systemOverlordSave_v2_6_0','systemOverlordSave_v2_5_0','systemOverlordSave'];
     for(const k of keys){try{const s=localStorage.getItem(k);if(s){parsed=JSON.parse(s);break;}}catch(e){}}
     if(!parsed){state=JSON.parse(JSON.stringify(defaultState));return;}
     // Migration: merge parsed with defaultState to ensure all new keys exist
@@ -2450,7 +2450,7 @@ function loadGame(){
 }
 window.exportSave=function(){const s=JSON.stringify(state);navigator.clipboard.writeText(btoa(s)).then(()=>showToast('Save copied to clipboard!','good')).catch(()=>{const t=document.createElement('textarea');t.value=btoa(s);document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);showToast('Save exported!','good');});};
 window.importSave=function(){const s=prompt('Paste your save string:');if(!s)return;try{state=JSON.parse(atob(s.trim()));showToast('Save imported!','good');render();}catch(e){showToast('Invalid save string!','crit');}};
-window.resetGame=function(){if(!confirm('HARD RESET: wipe all save data? This cannot be undone.'))return;['systemOverlordSave_v3_1_0','systemOverlordSave_v3_0_0','systemOverlordSave_v2_7_0','systemOverlordSave_v2_6_0','systemOverlordSave_v2_5_0','systemOverlordSave'].forEach(k=>localStorage.removeItem(k));state=JSON.parse(JSON.stringify(defaultState));showToast('Hard reset complete.','warn');render();};
+window.resetGame=function(){if(!confirm('HARD RESET: wipe all save data? This cannot be undone.'))return;['systemOverlordSave_v3_1_1','systemOverlordSave_v3_0_0','systemOverlordSave_v2_7_0','systemOverlordSave_v2_6_0','systemOverlordSave_v2_5_0','systemOverlordSave'].forEach(k=>localStorage.removeItem(k));state=JSON.parse(JSON.stringify(defaultState));showToast('Hard reset complete.','warn');render();};
 
 /* ==========================================================================
    MAIN RENDER
@@ -2673,7 +2673,7 @@ function clearEvent(){activeEvent=null;if(els.eventSlot)els.eventSlot.innerHTML=
 /* Boot sequence */
 window.skipBoot=function(){
     const bs=document.getElementById('boot-screen');bs.classList.add('fade-out');
-    setTimeout(()=>{bs.style.display='none';document.getElementById('main-ui').classList.add('visible');AudioEngine.enable();logMsg('System Overlord v3.1.0 — ENDLESS HORIZON','crit');logMsg('Extract data. Dominate networks. Transcend reality.','purple');startNetworkMapLoop();},900);
+    setTimeout(()=>{bs.style.display='none';document.getElementById('main-ui').classList.add('visible');AudioEngine.enable();logMsg('System Overlord v3.1.1 — ENDLESS HORIZON','crit');logMsg('Extract data. Dominate networks. Transcend reality.','purple');startNetworkMapLoop();},900);
 };
 function bootSequence(){
     const lines=document.querySelectorAll('#boot-text .line');let i=0;
