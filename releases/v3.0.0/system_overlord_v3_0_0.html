@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="System Overlord v3.0.0 â€” Endless Horizon. An incremental game of digital dominion, hardware mastery, and network warfare.">
+    <meta name="description" content="System Overlord v3.0.0 — Endless Horizon. An incremental game of digital dominion, hardware mastery, and network warfare.">
     <title>System Overlord v3.0.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -842,15 +842,9 @@
 
     <!-- Boot Screen -->
     <div id="boot-screen">
-        <div id="boot-logo">
-â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•—   â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—
-â–ˆâ–ˆâ•”â•â•â•â•â•â•šâ–ˆâ–ˆâ•— â–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•”â•â•â•â•â•
-â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â•šâ–ˆâ–ˆâ–ˆâ–ˆâ•”â• â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—
-â•šâ•â•â•â•â–ˆâ–ˆâ•‘  â•šâ–ˆâ–ˆâ•”â•  â•šâ•â•â•â•â–ˆâ–ˆâ•‘
-â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘
-â•šâ•â•â•â•â•â•â•   â•šâ•â•   â•šâ•â•â•â•â•â•â• OVERLORD v3.0.0</div>
+        <div id="boot-logo">[ SYSTEM OVERLORD ]\nv3.0.0</div>
         <div id="boot-text">
-            <div class="line">&gt; KERNEL v3.0.0 ENDLESS HORIZON â€” LOADING</div>
+            <div class="line">&gt; KERNEL v3.0.0 ENDLESS HORIZON — LOADING</div>
             <div class="line">&gt; HARDWARE SUBSYSTEM: INITIALIZING...</div>
             <div class="line">&gt; NEURAL COMPUTE ENGINE: ONLINE</div>
             <div class="line">&gt; PROCEDURAL NETWORK WARFARE MODULE: ARMED</div>
@@ -859,7 +853,7 @@
             <div class="line">&gt; FIREBASE LEADERBOARD: CONNECTED</div>
             <div class="line">&gt; ALL SYSTEMS NOMINAL. BEGINNING GLOBAL INFILTRATION.</div>
         </div>
-        <div id="boot-skip" onclick="skipBoot()">SPACE â€” SKIP</div>
+        <div id="boot-skip" onclick="skipBoot()">SPACE — SKIP</div>
         <div id="boot-version">SYS.OVERLORD // v3.0.0</div>
     </div>
 
@@ -873,19 +867,19 @@
             <div id="topbar-left">
                 <div id="topbar-logo">SYSTEM OVERLORD</div>
                 <div id="topbar-ver">v3.0.0</div>
-                <div class="topbar-stat"><div class="dot"></div><span>DATA/s</span><span class="ts-val" id="tb-data-rate">0</span></div>
-                <div class="topbar-stat"><span>$/s</span><span class="ts-val" id="tb-money-rate">0</span></div>
-                <div class="topbar-stat"><span>TRUST</span><span class="ts-val" id="tb-trust">0</span></div>
-                <div class="topbar-stat"><span>NETWORKS</span><span class="ts-val" id="tb-networks">0</span></div>
+                <div class="topbar-stat" data-tip="Raw data extraction rate"><div class="dot"></div><span>DATA/s</span><span class="ts-val" id="tb-data-rate">0</span></div>
+                <div class="topbar-stat" data-tip="Credits generated from algorithmic trading"><span>$/s</span><span class="ts-val" id="tb-money-rate">0</span></div>
+                <div class="topbar-stat" data-tip="Global footprint and tracking avoidance"><span>TRUST</span><span class="ts-val" id="tb-trust">0</span></div>
+                <div class="topbar-stat" data-tip="Corporate networks currently dominated"><span>NETWORKS</span><span class="ts-val" id="tb-networks">0</span></div>
             </div>
             <div id="topbar-right">
-                <div id="save-indicator">âœ“ SAVED</div>
+                <div id="save-indicator">✓ SAVED</div>
                 <div class="epoch-badge-top" id="epoch-badge-top" style="display:none">EPOCH <span id="epoch-badge-val">0</span></div>
                 <button class="tb-btn" onclick="openLeaderboard()">ðŸ† RANKS</button>
-                <button class="tb-btn" onclick="openSettings()">âš™ SETTINGS</button>
-                <button class="tb-btn" onclick="exportSave()">â¤´ EXPORT</button>
-                <button class="tb-btn" onclick="importSave()">â¤µ IMPORT</button>
-                <button class="tb-btn" id="btn-sound" onclick="toggleSound()">ðŸ”‡</button>
+                <button class="tb-btn" onclick="openSettings()">⚙ SETTINGS</button>
+                <button class="tb-btn" onclick="exportSave()">⤴ EXPORT</button>
+                <button class="tb-btn" onclick="importSave()">⤵ IMPORT</button>
+                <button class="tb-btn" id="btn-sound" onclick="toggleSound()">🔈</button>
             </div>
         </div>
 
@@ -924,7 +918,7 @@
             <!-- Threat Level -->
             <div class="sl-section">
                 <div id="threat-wrap">
-                    <div class="threat-title"><span id="threat-icon">ðŸŸ¢</span> THREAT LEVEL</div>
+                    <div class="threat-title"><span id="threat-icon">🟢</span> THREAT LEVEL</div>
                     <div class="threat-grid">
                         <button class="btn-threat active level-1" onclick="setThreatLevel(1)" data-level="1">1</button>
                         <button class="btn-threat" onclick="setThreatLevel(2)" data-level="2">2</button>
@@ -932,7 +926,7 @@
                         <button class="btn-threat" onclick="setThreatLevel(4)" data-level="4">4</button>
                         <button class="btn-threat" onclick="setThreatLevel(5)" data-level="5">5</button>
                     </div>
-                    <div id="threat-info" class="sr-title" style="margin-top:6px;margin-bottom:0">Secure â€” x1.0 data</div>
+                    <div id="threat-info" class="sr-title" style="margin-top:6px;margin-bottom:0">Secure — x1.0 data</div>
                 </div>
             </div>
 
@@ -960,7 +954,7 @@
 
             <!-- Breach button -->
             <div class="sl-section" style="padding:10px 16px">
-                <button id="btn-breach" onclick="startBreach()">âš  BREACH PROTOCOL</button>
+                <button id="btn-breach" onclick="startBreach()">⚠ BREACH PROTOCOL</button>
             </div>
 
             <!-- Botnet module (hidden until unlocked) -->
@@ -981,7 +975,7 @@
 
             <!-- Prestige button -->
             <div id="prestige-wrapper" class="hidden">
-                <button class="btn-prestige" onclick="openPrestige()">âŸ² Reboot Protocol</button>
+                <button class="btn-prestige" onclick="openPrestige()">⟲ Reboot Protocol</button>
             </div>
         </div>
 
@@ -989,9 +983,9 @@
         <div id="center-stage">
             <div id="center-tabs">
                 <button class="center-tab active" onclick="switchCenter('network')">ðŸŒ NETWORK</button>
-                <button class="center-tab tab-hw" onclick="switchCenter('hardware')">ðŸ–¥ HARDWARE</button>
-                <button class="center-tab tab-war" onclick="switchCenter('warfare')">âš” WARFARE<div class="center-tab-badge" id="badge-warfare"></div></button>
-                <button class="center-tab" onclick="switchCenter('terminal')">ðŸ“Ÿ TERMINAL</button>
+                <button class="center-tab tab-hw" onclick="switchCenter('hardware')">🖥 HARDWARE</button>
+                <button class="center-tab tab-war" onclick="switchCenter('warfare')">⚔ WARFARE<div class="center-tab-badge" id="badge-warfare"></div></button>
+                <button class="center-tab" onclick="switchCenter('terminal')">📟 TERMINAL</button>
             </div>
             <div id="center-content">
                 <!-- NETWORK TAB -->
@@ -1048,7 +1042,7 @@
                     </div>
                     <div class="rack-diagram">
                         <div class="rack-title">
-                            <span>SERVER RACK â€” <span id="hw-rack-count">1</span> UNIT(S)</span>
+                            <span>SERVER RACK — <span id="hw-rack-count">1</span> UNIT(S)</span>
                             <button class="tb-btn" onclick="buyRack()" id="btn-buy-rack">+ ADD RACK ($5,000)</button>
                         </div>
                         <div class="rack-slots" id="hw-rack-slots"></div>
@@ -1066,7 +1060,7 @@
                 <!-- WARFARE TAB -->
                 <div class="ct-panel" id="ct-warfare">
                     <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;font-family:var(--font-mono)">
-                        Discover and dominate corporate networks. Siphon their resources indefinitely â€” but defend your territory against counter-attacks.
+                        Discover and dominate corporate networks. Siphon their resources indefinitely — but defend your territory against counter-attacks.
                     </div>
                     <div id="warfare-networks" style="display:flex;flex-direction:column;gap:10px;"></div>
                     <div id="warfare-empty" style="text-align:center;padding:40px;color:var(--text-dim);font-family:var(--font-mono);font-size:12px">
@@ -1113,7 +1107,7 @@
                         <div class="flex-row"><span>Ops/s</span><span class="res-rate" id="opsRate">+0/s</span></div>
                         <div id="overclock-wrapper" class="hidden" style="margin-top:10px">
                             <button id="btn-overclock" onclick="triggerOverclock()" style="width:100%;padding:10px;font-size:12px;border:1px solid rgba(255,51,102,0.3);color:var(--danger);background:rgba(255,51,102,0.05);border-radius:5px;cursor:pointer;font-family:var(--font-sans);font-weight:600;text-transform:uppercase;letter-spacing:1px;transition:all 0.2s">
-                                OVERCLOCK â€” READY
+                                OVERCLOCK — READY
                             </button>
                             <div class="progress-track" style="height:3px;margin-top:4px">
                                 <div class="progress-fill purple" id="overclockBar" style="width:100%"></div>
@@ -1260,7 +1254,7 @@
     <!-- Breach minigame -->
     <div class="overlay" id="breach-overlay">
         <div class="overlay-panel" style="width:700px;border-color:var(--warn);box-shadow:0 0 30px rgba(255,204,0,0.2)">
-            <h2 style="font-size:15px;letter-spacing:2px;color:var(--warn);text-shadow:0 0 10px var(--warn-glow);border-bottom:none;margin-bottom:6px">âš  BREACH PROTOCOL</h2>
+            <h2 style="font-size:15px;letter-spacing:2px;color:var(--warn);text-shadow:0 0 10px var(--warn-glow);border-bottom:none;margin-bottom:6px">⚠ BREACH PROTOCOL</h2>
             <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px">Click all security nodes before the trace completes to siphon massive rewards.</p>
             <div id="breach-timer-container"><div id="breach-timer-fill"></div></div>
             <div id="breach-area"></div>
@@ -1270,7 +1264,7 @@
     <!-- Hack minigame -->
     <div class="overlay" id="hack-overlay" style="display:none;z-index:800000">
         <div class="overlay-panel" style="border-color:var(--warn);box-shadow:0 0 30px rgba(255,204,0,0.25);text-align:center">
-            <h2 style="font-size:18px;letter-spacing:2px;color:var(--warn);text-shadow:0 0 10px var(--warn-glow);border-bottom:none;margin-bottom:6px">âš  FIREWALL INTRUSION DETECTED âš </h2>
+            <h2 style="font-size:18px;letter-spacing:2px;color:var(--warn);text-shadow:0 0 10px var(--warn-glow);border-bottom:none;margin-bottom:6px">⚠ FIREWALL INTRUSION DETECTED ⚠</h2>
             <p style="font-size:11px;color:var(--text-dim);margin-bottom:18px">Input the bypass sequence immediately.</p>
             <div id="hack-sequence" style="margin-bottom:20px"></div>
             <div id="hack-timer-wrap" style="height:5px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden">
@@ -1292,8 +1286,8 @@
     <!-- Prestige overlay -->
     <div class="overlay" id="prestige-overlay">
         <div class="overlay-panel">
-            <button class="overlay-close" onclick="closePrestige()">âœ•</button>
-            <h2 class="overlay-h2" style="color:var(--purple)">âŸ² Reboot Protocol</h2>
+            <button class="overlay-close" onclick="closePrestige()">✕</button>
+            <h2 class="overlay-h2" style="color:var(--purple)">⟲ Reboot Protocol</h2>
             <p style="font-size:11px;color:var(--text-dim);margin-bottom:14px">Reset your system for permanent kernel enhancements. All progress resets, Kernel Fragments persist.</p>
             <div style="margin-bottom:14px">
                 <div class="prestige-stat"><span>Current Kernel Fragments</span><span id="current-kf">0</span></div>
@@ -1302,16 +1296,16 @@
             </div>
             <h3 style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Kernel Upgrades</h3>
             <div id="prestige-shop"></div>
-            <button class="btn-reboot" id="btn-reboot" onclick="confirmReboot()">âš  Initiate System Reboot</button>
+            <button class="btn-reboot" id="btn-reboot" onclick="confirmReboot()">⚠ Initiate System Reboot</button>
             <div class="epoch-divider" id="epoch-section" style="display:none">
-                <h3>â—ˆ Epoch Ascension</h3>
-                <p style="font-size:10px;color:var(--text-dim);margin-bottom:10px">Transcend the reboot cycle. Spend 25 KF + 3 Reboots. Epoch Tokens and upgrades persist â€” forever scaling your power.</p>
+                <h3>◈ Epoch Ascension</h3>
+                <p style="font-size:10px;color:var(--text-dim);margin-bottom:10px">Transcend the reboot cycle. Spend 25 KF + 3 Reboots. Epoch Tokens and upgrades persist — forever scaling your power.</p>
                 <div class="epoch-stat"><span>Current Epoch</span><span id="epoch-count-display">0</span></div>
                 <div class="epoch-stat"><span>Epoch Tokens</span><span id="epoch-tokens-display">0</span></div>
                 <div class="epoch-stat"><span>Cost to Ascend</span><span style="color:var(--warn)">25 KF + 3 Reboots</span></div>
                 <h3 style="margin-top:12px;margin-bottom:6px;font-size:11px">Epoch Upgrades</h3>
                 <div id="epoch-shop"></div>
-                <button class="btn-ascend" id="btn-ascend" onclick="confirmAscend()">â—ˆ Initiate Epoch Ascension</button>
+                <button class="btn-ascend" id="btn-ascend" onclick="confirmAscend()">◈ Initiate Epoch Ascension</button>
             </div>
         </div>
     </div>
@@ -1319,7 +1313,7 @@
     <!-- Leaderboard overlay -->
     <div class="overlay" id="leaderboard-overlay">
         <div class="overlay-panel">
-            <button class="overlay-close" onclick="closeLeaderboard()">âœ•</button>
+            <button class="overlay-close" onclick="closeLeaderboard()">✕</button>
             <h2 class="overlay-h2">ðŸ† OPERATOR RANKINGS</h2>
             <p style="font-size:11px;color:var(--text-dim);margin-bottom:12px">Your Operator Rating is calculated from data depth, prestige count, trust level, epoch tier, and network warfare dominance.</p>
             <div class="lb-your-score">
@@ -1336,7 +1330,7 @@
             </div>
             <div id="lb-tab-local" class="lb-tab-content active"><div id="lb-local-content"><div class="lb-status">No runs recorded yet.</div></div></div>
             <div id="lb-tab-global" class="lb-tab-content">
-                <button class="lb-refresh" onclick="fetchOnlineLeaderboard()">â†» Refresh</button>
+                <button class="lb-refresh" onclick="fetchOnlineLeaderboard()">↻ Refresh</button>
                 <div id="lb-global-content"><div class="lb-status">Click Refresh to load global rankings.</div></div>
             </div>
         </div>
@@ -1345,8 +1339,8 @@
     <!-- Settings overlay -->
     <div class="overlay" id="settings-overlay">
         <div class="overlay-panel">
-            <button class="overlay-close" onclick="closeSettings()">âœ•</button>
-            <h2 class="overlay-h2">âš™ SETTINGS</h2>
+            <button class="overlay-close" onclick="closeSettings()">✕</button>
+            <h2 class="overlay-h2">⚙ SETTINGS</h2>
             <div class="setting-row">
                 <div class="setting-label">Theme<small>Modern or Retro CRT</small></div>
                 <button class="tb-btn" onclick="toggleTheme()" id="btn-theme">RETRO MODE</button>
@@ -1365,7 +1359,7 @@
     <!-- Admin overlay -->
     <div class="overlay" id="admin-overlay">
         <div class="overlay-panel" style="border-color:rgba(255,51,102,0.2)">
-            <button class="overlay-close" onclick="toggleAdmin()">âœ•</button>
+            <button class="overlay-close" onclick="toggleAdmin()">✕</button>
             <h2 class="overlay-h2" style="color:var(--danger)">OVERSEER DEBUG TERMINAL</h2>
             <p style="font-size:10px;color:var(--text-dim);margin-bottom:10px">Hotkey: Alt+Shift+A</p>
             <h3 style="font-size:11px;color:#fff;margin-bottom:6px">Resource Injection</h3>
@@ -1713,8 +1707,8 @@ const achievements=[
     {id:'prestige1',icon:'â™»ï¸',title:'Born Again',desc:'Complete your first reboot.',bonus:'Start bonus +50 data',check:()=>state.prestigeCount>=1,onEarn:()=>{}},
     {id:'prestige5',icon:'ðŸ”„',title:'Eternal Return',desc:'Complete 5 reboots.',bonus:'+5% fragment gain',check:()=>state.prestigeCount>=5,onEarn:()=>{}},
     {id:'net1',icon:'ðŸŽ¯',title:'First Blood',desc:'Dominate your first network.',bonus:'+10% network loot',check:()=>state.lifetime.networksBreached>=1,onEarn:()=>{}},
-    {id:'net10',icon:'âš”ï¸',title:'Network Warlord',desc:'Dominate 10 networks.',bonus:'+25% network loot',check:()=>state.lifetime.networksBreached>=10,onEarn:()=>{}},
-    {id:'hw1',icon:'ðŸ–¥ï¸',title:'Hardware Hacker',desc:'Install your first hardware component.',bonus:'+5% Ops gen',check:()=>state.hardware.installed.length>=1,onEarn:()=>{}},
+    {id:'net10',icon:'⚔ï¸',title:'Network Warlord',desc:'Dominate 10 networks.',bonus:'+25% network loot',check:()=>state.lifetime.networksBreached>=10,onEarn:()=>{}},
+    {id:'hw1',icon:'🖥ï¸',title:'Hardware Hacker',desc:'Install your first hardware component.',bonus:'+5% Ops gen',check:()=>state.hardware.installed.length>=1,onEarn:()=>{}},
     {id:'hw5',icon:'ðŸ”§',title:'Silicon Overlord',desc:'Install 5 hardware components.',bonus:'+10% Ops gen',check:()=>state.hardware.installed.length>=5,onEarn:()=>{}},
 ];
 
@@ -1825,8 +1819,8 @@ function calculateTrust(){
 window.setThreatLevel=function(lvl){
     state.threatLevel=lvl;
     document.querySelectorAll('.btn-threat').forEach(b=>{b.classList.remove('active','level-1','level-2','level-3','level-4','level-5');if(parseInt(b.dataset.level)===lvl)b.classList.add('active',`level-${lvl}`);});
-    const labels=['Secure â€” x1.0 data','Elevated â€” x1.5 data','Dangerous â€” x3.0 data','Critical â€” x7.5 data','Black Site â€” x15.0 data'];
-    const icons=['ðŸŸ¢','ðŸŸ¡','ðŸŸ ','ðŸ”´','â˜ ï¸'];
+    const labels=['Secure — x1.0 data','Elevated — x1.5 data','Dangerous — x3.0 data','Critical — x7.5 data','Black Site — x15.0 data'];
+    const icons=['🟢','ðŸŸ¡','ðŸŸ ','ðŸ”´','â˜ ï¸'];
     if(els.threatInfo)els.threatInfo.textContent=labels[lvl-1];
     if(els.threatIcon)els.threatIcon.textContent=icons[lvl-1];
     AudioEngine.click();
@@ -2140,7 +2134,7 @@ function breachSuccess(){
 function breachFail(){
     breachActive=false;
     document.getElementById('breach-overlay').classList.remove('show');
-    showToast('BREACH FAILED â€” Trace complete','crit');
+    showToast('BREACH FAILED — Trace complete','crit');
     if(_breachNetId){const net=state.networks.find(n=>n.id===_breachNetId);if(net)net.defense=Math.min(net.maxDefense,net.defense+net.maxDefense*0.2);}
     _breachNetId=null;
 }
@@ -2246,14 +2240,14 @@ function renderWarfarePanel(){
             return `<div style="background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.2);border-radius:8px;padding:12px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                     <div><span style="font-size:12px;font-weight:700;color:var(--green)">${net.name}</span> <span style="font-size:9px;font-family:var(--font-mono);color:${m.color};background:rgba(0,0,0,0.4);padding:2px 5px;border-radius:3px">${m.label}</span> <span style="font-size:9px;color:var(--text-dim)">TIER ${net.tier}</span></div>
-                    <span style="font-size:10px;color:var(--green);font-family:var(--font-mono)">âœ“ DOMINATED</span>
+                    <span style="font-size:10px;color:var(--green);font-family:var(--font-mono)">✓ DOMINATED</span>
                 </div>
                 <div style="display:flex;gap:10px;margin-bottom:6px;font-size:10px;color:var(--text-dim)">
                     <span>Yield: <b style="color:var(--green)">${yieldPct}%</b></span>
                     <span>Income: <b style="color:var(--accent)">${fData(net.loot.data/3600)}/s</b></span>
                     <span style="color:${fMoney(net.loot.credits/3600)}">${fMoney(net.loot.credits/3600)}/s</b></span>
                 </div>
-                ${!net.noAttack?`<div style="margin-top:4px"><div style="font-size:9px;color:var(--text-dim);margin-bottom:2px">Next Attack: ${attPct}%</div><div class="progress-track" style="height:3px"><div class="progress-fill danger" style="width:${attPct}%"></div></div></div>`:'<div style="font-size:9px;color:var(--accent)">Ghost network â€” no counter-attacks</div>'}
+                ${!net.noAttack?`<div style="margin-top:4px"><div style="font-size:9px;color:var(--text-dim);margin-bottom:2px">Next Attack: ${attPct}%</div><div class="progress-track" style="height:3px"><div class="progress-fill danger" style="width:${attPct}%"></div></div></div>`:'<div style="font-size:9px;color:var(--accent)">Ghost network — no counter-attacks</div>'}
             </div>`;
         } else {
             return `<div style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,179,0.12);border-radius:8px;padding:12px">
@@ -2294,7 +2288,7 @@ function renderHardwarePanel(){
         state.hardware.installed.forEach(id=>{const item=findHwItem(id);if(!item)return;slots.push(`<div class="rack-slot filled"><span class="rs-type">[${item.type.toUpperCase()}]</span><span class="rs-name">${item.name}</span><span class="rs-effect">${item.effect}</span>${item.tdp>0?`<span class="rs-tdp">${item.tdp}W</span>`:''}</div>`);});
         const totalSlots=state.hardware.cpuSlots+state.hardware.gpuSlots+state.hardware.ramSlots+state.hardware.coolSlots;
         const usedSlots=state.hardware.installed.length;
-        for(let i=usedSlots;i<Math.min(totalSlots,usedSlots+4);i++)slots.push(`<div class="rack-slot"><span style="color:var(--text-dim);font-size:9px">â€” EMPTY SLOT â€”</span></div>`);
+        for(let i=usedSlots;i<Math.min(totalSlots,usedSlots+4);i++)slots.push(`<div class="rack-slot"><span style="color:var(--text-dim);font-size:9px">— EMPTY SLOT —</span></div>`);
         els.hwRackSlots.innerHTML=slots.join('');
     }
     // HW shops
@@ -2310,7 +2304,7 @@ function renderHardwarePanel(){
             if(item.type==='cool'&&countInstalledType('cool')>=state.hardware.coolSlots)slotFull=true;
             const disabled=installed||!canAfford||slotFull;
             return `<div class="hw-item ${disabled?'disabled':''} ${installed?'installed':''}" onclick="${disabled?'':'installHardware(\''+item.id+'\')'}">
-                <div class="hwi-left"><div class="hwi-name">${installed?'âœ“ ':''} TIER ${item.tier} â€” ${item.name}</div><div class="hwi-stat">${item.effect}${item.tdp>0?' Â· '+item.tdp+'W TDP':''}</div></div>
+                <div class="hwi-left"><div class="hwi-name">${installed?'✓ ':''} TIER ${item.tier} — ${item.name}</div><div class="hwi-stat">${item.effect}${item.tdp>0?' Â· '+item.tdp+'W TDP':''}</div></div>
                 <div class="hwi-right"><div class="hwi-cost">${installed?'Installed':fMoney(item.cost)}</div>${slotFull&&!installed?'<div style="font-size:9px;color:var(--danger)">No slots</div>':''}</div>
             </div>`;
         }).join('');
@@ -2491,7 +2485,7 @@ function render(){
         if(els.memCost)els.memCost.textContent=memCost+' Trust';
         if(state.milestones.creativityUnlocked&&els.creativity)els.creativity.textContent=fNum(Math.floor(state.creativity||0));
         if(els.overclockBar)els.overclockBar.style.width=(1-state.overclockCooldown/60)*100+'%';
-        if(els.btnOverclock)els.btnOverclock.textContent=state.overclockCooldown>0?`OVERCLOCK â€” ${Math.ceil(state.overclockCooldown)}s`:'OVERCLOCK â€” READY';
+        if(els.btnOverclock)els.btnOverclock.textContent=state.overclockCooldown>0?`OVERCLOCK — ${Math.ceil(state.overclockCooldown)}s`:'OVERCLOCK — READY';
     }
     // Combo
     const comboEl=els.clickCombo;if(comboEl){comboEl.textContent=`COMBO x${state.combo.toFixed(1)}`;comboEl.classList.remove('combo-active','combo-max');if(state.combo>=state.maxCombo)comboEl.classList.add('combo-max');else if(state.combo>2)comboEl.classList.add('combo-active');}
@@ -2651,7 +2645,7 @@ function clearEvent(){activeEvent=null;if(els.eventSlot)els.eventSlot.innerHTML=
 /* Boot sequence */
 window.skipBoot=function(){
     const bs=document.getElementById('boot-screen');bs.classList.add('fade-out');
-    setTimeout(()=>{bs.style.display='none';document.getElementById('main-ui').classList.add('visible');AudioEngine.enable();logMsg('System Overlord v3.0.0 â€” ENDLESS HORIZON','crit');logMsg('Extract data. Dominate networks. Transcend reality.','purple');startNetworkMapLoop();},900);
+    setTimeout(()=>{bs.style.display='none';document.getElementById('main-ui').classList.add('visible');AudioEngine.enable();logMsg('System Overlord v3.0.0 — ENDLESS HORIZON','crit');logMsg('Extract data. Dominate networks. Transcend reality.','purple');startNetworkMapLoop();},900);
 };
 function bootSequence(){
     const lines=document.querySelectorAll('#boot-text .line');let i=0;
@@ -2677,7 +2671,27 @@ setInterval(addHoverSfx,2000);
 /* ==========================================================================
    STARTUP
    ========================================================================== */
+const tooltip=document.getElementById('dynamic-tooltip');
+function initTooltips(){
+    document.addEventListener('mousemove',e=>{
+        const t=e.target.closest('[data-tip]');
+        if(t){
+            tooltip.innerHTML=t.dataset.tip;
+            tooltip.style.display='block';
+            tooltip.style.opacity=1;
+            let x=e.clientX+15, y=e.clientY+15;
+            if(x+tooltip.offsetWidth>window.innerWidth) x=e.clientX-tooltip.offsetWidth-15;
+            if(y+tooltip.offsetHeight>window.innerHeight) y=e.clientY-tooltip.offsetHeight-15;
+            tooltip.style.left=x+'px';
+            tooltip.style.top=y+'px';
+        }else{
+            tooltip.style.opacity=0;
+            tooltip.style.display='none';
+        }
+    });
+}
 window.addEventListener('DOMContentLoaded',()=>{
+    initTooltips();
     cacheDom();
     loadGame();
     // Apply saved state to UI
