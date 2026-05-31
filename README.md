@@ -38,19 +38,6 @@ The game auto-saves your progress to your browser's `localStorage` every 15 seco
 * You can import a save string at any time to resume your progress across different browsers or machines.
 * Save migrations are handled automatically between versions.
 
-## 🌐 Setting Up the Global Leaderboard
-
-The game features an optional global leaderboard integration using Firebase Realtime Database. If you host the game or want a private leaderboard with your friends, follow these steps:
-
-1. Go to the [Firebase Console](https://console.firebase.google.com).
-2. Create a new, free project.
-3. Enable **Realtime Database** and start it in *Test Mode*.
-4. Copy your database URL (it will look something like `https://your-project-default-rtdb.firebaseio.com`).
-5. Open the game HTML file in a text editor and search for `const FIREBASE_URL = ''` (located near the bottom of the script).
-6. Paste your URL into the string: `const FIREBASE_URL = 'https://your-project-default-rtdb.firebaseio.com/leaderboard'`.
-7. Save the file and reload the game. The "Ranks" tab will now fetch and post to the live database!
-
-> **Warning:** Test mode makes your database public. For production deployments, ensure you set up proper Firebase Authentication rules and an index on `"score"`.
 
 ## 🛠️ Architecture & Tech Stack
 
