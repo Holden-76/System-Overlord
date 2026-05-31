@@ -24,20 +24,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-window.switchCenter = function(tabId) {
-    document.querySelectorAll('.ct-panel').forEach(p => p.style.display = 'none');
-    document.querySelectorAll('.center-tab').forEach(t => t.classList.remove('active'));
-    
-    const panel = document.getElementById('ct-'+tabId);
-    if(panel) panel.style.display = 'flex';
-    
-    const btn = Array.from(document.querySelectorAll('.center-tab')).find(b => b.textContent.trim().toLowerCase() === tabId);
-    if(btn) btn.classList.add('active');
-    
-    if(tabId === 'darknet') renderGrid();
-    else if(tabId === 'forge') updateForgeUI();
-    else if(tabId === 'singularity') updateDysonUI();
-};
 
 
 
@@ -136,4 +122,53 @@ window.bootSequence=function(){
     function next(){if(i>=lines.length){setTimeout(()=>window.skipBoot(),800);return;}lines[i].classList.add('visible');i++;setTimeout(next,220);}
     setTimeout(next,400);
     document.addEventListener('keydown',e=>{if(e.code==='Space')window.skipBoot();},{once:true});
+};
+
+window.switchTab = function(tab) {
+    document.querySelectorAll('.tab-btn-sm').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content-sm').forEach(t => t.classList.remove('active'));
+    
+    const btn = document.getElementById('tab-btn-' + tab);
+    const content = document.getElementById('tab-' + tab);
+    if (btn) btn.classList.add('active');
+    if (content) content.classList.add('active');
+    
+    if (tab === 'projects') {
+        const b = document.getElementById('badge-projects');
+        if (b) b.classList.remove('show');
+    }
+    if (tab === 'achievements') {
+        const b = document.getElementById('badge-achievements');
+        if (b) b.classList.remove('show');
+        if (window.Store && window.Store.state) window.Store.state._unseenAchievements = 0;
+    }
+};
+
+window.switchCenter = function(tabId) {
+    document.querySelectorAll('.ct-panel').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+    });
+    document.querySelectorAll('.center-tab').forEach(t => t.classList.remove('active'));
+    
+    const panel = document.getElementById('ct-' + tabId);
+    if (panel) {
+        panel.classList.add('active');
+        // Handle special flex displays if needed, though .active in css should handle it
+        panel.style.display = (tabId === 'terminal' || tabId === 'meta') ? 'flex' : 'block';
+    }
+    
+    // Find button by matching the text content or onclick
+    const btn = Array.from(document.querySelectorAll('.center-tab')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
+    if (btn) btn.classList.add('active');
+    
+    if (tabId === 'darknet' && window.renderGrid) window.renderGrid();
+    else if (tabId === 'forge' && window.updateForgeUI) window.updateForgeUI();
+    else if (tabId === 'singularity' && window.updateDysonUI) window.updateDysonUI();
+    else if (tabId === 'network' && window.renderNetworkMap) window.renderNetworkMap();
+    else if (tabId === 'warfare') {
+        if (window.renderWarfarePanel) window.renderWarfarePanel();
+        const b = document.getElementById('badge-warfare');
+        if (b) b.classList.remove('show');
+    }
 };
