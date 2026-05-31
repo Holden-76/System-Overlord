@@ -7,10 +7,8 @@ import { initForge, updateForgeUI } from './forge.js';
 import { initDyson, updateDysonUI } from './dyson.js';
 import { initTerminal } from './terminal.js';
 
-// Attach hooks to window for HTML click handlers
-window.extractData = function() { Store.state.data += Store.state.clickPower; }
-window.buyExtractor = function() { Store.state.extractors++; }
-
+import * as Actions from './actions.js';
+Object.assign(window, Actions);
 window.addEventListener('DOMContentLoaded', () => {
     cacheDom();
     loadGame();
