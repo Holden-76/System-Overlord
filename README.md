@@ -3,7 +3,7 @@
 <div align="center">
   <img src="https://via.placeholder.com/800x400/0a0a0a/00e8ff?text=SYSTEM+OVERLORD" alt="System Overlord Banner">
   <p><em>An incremental game of digital dominion, neural ascension, and global infiltration.</em></p>
-  <p><strong>Latest Version: v3.1.1 "Endless Horizon"</strong></p>
+  <p><strong>Latest Version: v3.2.0 "Endless Horizon"</strong></p>
 </div>
 
 ## ðŸ“Œ Overview
@@ -52,5 +52,6 @@ The game auto-saves your progress to your browser's `localStorage` every 15 seco
 ## ðŸ“œ License
 
 This project is open-source. Feel free to fork, modify, and build your own digital empires!
+
 
 
